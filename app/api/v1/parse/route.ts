@@ -1,0 +1,64 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { 
+  apiResponse, 
+  apiError, 
+  corsHeaders, 
+  checkRateLimit, 
+  getClientIP,
+  validateJsonString,
+  calculateJsonStats
+} from '@/lib/api-utils'
+import { parseJsonToTree, calculateStats, resetNodeIdCounter } from '@/lib/json-utils'
+
+export async function POST(request: NextRequest) {
+  const requestId = request.headers.get('x-request-id') || undefined
+  const clientIP = getClientIP(request)
+  
+  // Rate limiting
+  const rateLimit = checkRateLimit(clientIP)
+  if (!rateLimit.allowed) {
+    return apiError('Rate limit exceeded. Please try again later.', 429, requestId)
+  }
+
+  try {
+    const body = await request.json()
+    const { json, options = {} } = body
+
+    if (!json || typeof json !== 'string') {
+      return apiError('Missing or invalid "json" field. Expected a string.', 400, requestId)
+    }
+
+    // Validate JSON
+    const validation = validateJsonString(json)
+    if (!validation.valid) {
+      return apiError(`Invalid JSON: ${validation.error}`, 400, requestId)
+    }
+
+    // Parse to tree
+    resetNodeIdCounter()
+    const tree = parseJsonToTree(validation.parsed)
+    
+    // Calculate stats if requested
+    const stats = options.includeStats !== false ? calculateStats(tree) : undefined
+
+    return apiResponse(
+      {
+        tree,
+        stats,
+        valid: true,
+      },
+      200,
+      requestId
+    )
+  } catch (error) {
+    console.error('Parse error:', error)
+    return apiError('Internal server error', 500, requestId)
+  }
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders(),
+  })
+}

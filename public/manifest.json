@@ -1,0 +1,43 @@
+{
+  "name": "JSON Tree",
+  "short_name": "JSON Tree",
+  "description": "A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, and API.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0a0a0a",
+  "theme_color": "#0a0a0a",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["developer", "utilities", "productivity"],
+  "lang": "en",
+  "dir": "ltr",
+  "scope": "/",
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Format JSON",
+      "short_name": "Format",
+      "description": "Format and beautify JSON",
+      "url": "/?action=format"
+    },
+    {
+      "name": "Validate JSON",
+      "short_name": "Validate",
+      "description": "Validate JSON syntax",
+      "url": "/?action=validate"
+    }
+  ]
+}
