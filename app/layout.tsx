@@ -14,16 +14,16 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://json-tree.vercel.app'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'),
   title: {
-    default: 'JSON Tree - Visualize, Format & Validate JSON',
-    template: '%s | JSON Tree'
+    default: 'JSON Tree - Visualize, Format & Validate JSON | Platphorm News',
+    template: '%s | JSON Tree by Platphorm'
   },
-  description: 'A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, and API. Parse, validate, and explore JSON data structures with ease.',
-  keywords: ['JSON', 'JSON viewer', 'JSON formatter', 'JSON validator', 'JSON tree', 'JSON visualizer', 'JSON parser', 'developer tools', 'API'],
-  authors: [{ name: 'JSON Tree' }],
-  creator: 'JSON Tree',
-  publisher: 'JSON Tree',
+  description: 'A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, and REST API. Parse, validate, and explore JSON data structures. Built by Platphorm News.',
+  keywords: ['JSON', 'JSON viewer', 'JSON formatter', 'JSON validator', 'JSON tree', 'JSON visualizer', 'JSON parser', 'developer tools', 'API', 'MCP', 'Platphorm News'],
+  authors: [{ name: 'Platphorm News', url: 'https://platphormnews.com' }],
+  creator: 'Platphorm News',
+  publisher: 'Platphorm News',
   generator: 'Next.js',
   applicationName: 'JSON Tree',
   referrer: 'origin-when-cross-origin',
@@ -36,23 +36,24 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: '/',
-    siteName: 'JSON Tree',
+    siteName: 'JSON Tree by Platphorm',
     title: 'JSON Tree - Visualize, Format & Validate JSON',
-    description: 'A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, and API.',
+    description: 'A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, REST API, and MCP server. Built by Platphorm News.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'JSON Tree - JSON Visualization Tool',
+        alt: 'JSON Tree - JSON Visualization Tool by Platphorm News',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'JSON Tree - Visualize, Format & Validate JSON',
-    description: 'A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, and API.',
+    description: 'A powerful JSON visualization tool with tree view, graph view, REST API, and MCP server. Built by Platphorm News.',
     images: ['/og-image.png'],
+    creator: '@platphormnews',
   },
   robots: {
     index: true,
@@ -108,10 +109,17 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "WebApplication",
               "name": "JSON Tree",
-              "description": "A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, and API.",
-              "url": process.env.NEXT_PUBLIC_APP_URL || "https://json-tree.vercel.app",
+              "alternateName": "JSON Tree by Platphorm",
+              "description": "A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, REST API, and MCP server. Built by Platphorm News.",
+              "url": process.env.NEXT_PUBLIC_APP_URL || "https://json.platphormnews.com",
               "applicationCategory": "DeveloperApplication",
               "operatingSystem": "Any",
+              "version": "0.0.1",
+              "author": {
+                "@type": "Organization",
+                "name": "Platphorm News",
+                "url": "https://platphormnews.com"
+              },
               "offers": {
                 "@type": "Offer",
                 "price": "0",
@@ -120,13 +128,16 @@ export default function RootLayout({
               "featureList": [
                 "JSON Tree Visualization",
                 "JSON Graph Visualization", 
-                "JSON Formatting",
-                "JSON Minification",
+                "JSON Formatting & Minification",
                 "JSON Validation",
+                "JSON Path Navigation",
+                "JSON Diff Comparison",
+                "URL Sharing & Import",
                 "Search Functionality",
                 "Dark/Light Theme",
-                "REST API",
-                "MCP Server"
+                "REST API v1",
+                "MCP Server Integration",
+                "OpenAPI Documentation"
               ]
             })
           }}

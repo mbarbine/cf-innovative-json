@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Github, ExternalLink, FileJson2 } from 'lucide-react'
+import { Github, ExternalLink, FileJson2, BookOpen } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -11,18 +11,23 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
+const APP_VERSION = '0.0.1'
+
 export function Header() {
   return (
     <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-background">
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-            <FileJson2 className="w-5 h-5 text-primary-foreground" />
+          <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center">
+            <FileJson2 className="w-5 h-5 text-white" />
           </div>
-          <span className="font-semibold text-lg text-foreground">JSON Tree</span>
+          <div className="flex flex-col">
+            <span className="font-semibold text-lg text-foreground leading-tight">JSON Tree</span>
+            <span className="text-[10px] text-muted-foreground leading-none hidden sm:block">by Platphorm News</span>
+          </div>
         </Link>
-        <span className="hidden sm:inline-block px-2 py-0.5 text-xs font-medium bg-muted rounded-full text-muted-foreground">
-          v1.0.0
+        <span className="hidden sm:inline-block px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-600 rounded-full">
+          v{APP_VERSION}
         </span>
       </div>
 

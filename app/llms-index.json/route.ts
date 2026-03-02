@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://json-tree.vercel.app'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'
 
 export async function GET() {
   const index = {
-    name: 'JSON Tree',
-    version: '1.0.0',
-    description: 'A powerful JSON visualization and manipulation tool',
+    name: 'JSON Tree by Platphorm',
+    version: '0.0.1',
+    description: 'A powerful JSON visualization and manipulation tool by Platphorm News',
+    author: 'Platphorm News',
     website: BASE_URL,
     llmsTxt: `${BASE_URL}/llms.txt`,
     llmsFullTxt: `${BASE_URL}/llms-full.txt`,
@@ -97,7 +98,9 @@ export async function GET() {
       'Keyboard shortcuts',
     ],
     contact: {
-      email: 'support@json-tree.vercel.app',
+      name: 'Platphorm News',
+      website: 'https://platphormnews.com',
+      email: 'support@platphormnews.com',
     },
     updated: new Date().toISOString(),
   }

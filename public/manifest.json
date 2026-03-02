@@ -1,7 +1,7 @@
 {
-  "name": "JSON Tree",
+  "name": "JSON Tree by Platphorm",
   "short_name": "JSON Tree",
-  "description": "A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, and API.",
+  "description": "A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, REST API, and MCP server. Built by Platphorm News.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#0a0a0a",

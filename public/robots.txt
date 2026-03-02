@@ -1,5 +1,5 @@
-# JSON Tree - Robots.txt
-# https://json-tree.vercel.app
+# JSON Tree by Platphorm News - Robots.txt
+# https://json.platphormnews.com
 
 User-agent: *
 Allow: /
@@ -8,8 +8,8 @@ Allow: /api/docs
 Allow: /api/health
 
 # Sitemaps
-Sitemap: https://json-tree.vercel.app/sitemap.xml
-Sitemap: https://json-tree.vercel.app/sitemap-index.xml
+Sitemap: https://json.platphormnews.com/sitemap.xml
+Sitemap: https://json.platphormnews.com/sitemap-index.xml
 
 # Crawl-delay for respectful crawling
 Crawl-delay: 1
