@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { 
   Search, 
   TreePine, 
@@ -18,16 +18,22 @@ import {
   Check,
   Sun,
   Moon,
-  Keyboard
+  Keyboard,
+  ArrowLeftRight,
+  Link2,
+  X
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog'
 import { Kbd } from '@/components/ui/kbd'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import type { ViewMode, TreeStats } from '@/lib/types'
 import { formatJson, minifyJson, copyToClipboard } from '@/lib/json-utils'
+import { createShareUrl } from '@/lib/sharing'
 import { useTheme } from 'next-themes'
 
 interface ToolbarProps {
@@ -46,6 +52,8 @@ interface ToolbarProps {
   canRedo: boolean
   stats: TreeStats | null
   isValid: boolean
+  onOpenDiff?: () => void
+  isDiffOpen?: boolean
 }
 
 const viewModes: { value: ViewMode; label: string; icon: React.ReactNode }[] = [
@@ -83,10 +91,54 @@ export function Toolbar({
   canUndo,
   canRedo,
   stats,
-  isValid
+  isValid,
+  onOpenDiff,
+  isDiffOpen
 }: ToolbarProps) {
   const [copied, setCopied] = useState(false)
+  const [shareCopied, setShareCopied] = useState(false)
+  const [shareUrl, setShareUrl] = useState('')
+  const [importUrl, setImportUrl] = useState('')
+  const [importing, setImporting] = useState(false)
+  const [importError, setImportError] = useState<string | null>(null)
   const { theme, setTheme } = useTheme()
+  
+  const handleShareLink = useCallback(async () => {
+    if (!isValid) return
+    const url = createShareUrl({ json: rawJson, viewMode })
+    setShareUrl(url)
+    await copyToClipboard(url)
+    setShareCopied(true)
+    setTimeout(() => setShareCopied(false), 2000)
+  }, [rawJson, viewMode, isValid])
+  
+  const handleImportFromUrl = useCallback(async () => {
+    if (!importUrl.trim()) return
+    
+    setImporting(true)
+    setImportError(null)
+    
+    try {
+      const response = await fetch('/api/v1/fetch-url', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: importUrl })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success && data.data?.json) {
+        setRawJson(data.data.json)
+        setImportUrl('')
+      } else {
+        throw new Error(data.error || 'Failed to fetch JSON')
+      }
+    } catch (err) {
+      setImportError(err instanceof Error ? err.message : 'Failed to import')
+    } finally {
+      setImporting(false)
+    }
+  }, [importUrl, setRawJson])
 
   const handleFormat = () => {
     try {
@@ -264,6 +316,79 @@ export function Toolbar({
             </TooltipTrigger>
             <TooltipContent>Upload File</TooltipContent>
           </Tooltip>
+
+          <div className="w-px h-6 bg-border mx-1" />
+          
+          {/* Share & Import Dialog */}
+          <Dialog>
+            <DialogTrigger asChild>
+              <Button variant="ghost" size="icon" disabled={!isValid}>
+                <Link2 className="w-4 h-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Share & Import</DialogTitle>
+                <DialogDescription>Share your JSON or import from URL</DialogDescription>
+              </DialogHeader>
+              <Tabs defaultValue="share" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="share">Share</TabsTrigger>
+                  <TabsTrigger value="import">Import</TabsTrigger>
+                </TabsList>
+                <TabsContent value="share" className="space-y-3 pt-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Share Link</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={shareUrl || 'Click to generate link...'}
+                        readOnly
+                        className="font-mono text-xs h-9"
+                      />
+                      <Button size="sm" onClick={handleShareLink} disabled={!isValid}>
+                        {shareCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                    <p className="text-xs text-muted-foreground">Compressed link with your JSON data</p>
+                  </div>
+                </TabsContent>
+                <TabsContent value="import" className="space-y-3 pt-3">
+                  <div className="space-y-2">
+                    <Label className="text-xs">Import from URL</Label>
+                    <div className="flex gap-2">
+                      <Input
+                        value={importUrl}
+                        onChange={(e) => { setImportUrl(e.target.value); setImportError(null) }}
+                        placeholder="https://api.example.com/data.json"
+                        className="font-mono text-xs h-9"
+                      />
+                      <Button size="sm" onClick={handleImportFromUrl} disabled={importing || !importUrl.trim()}>
+                        {importing ? '...' : <Download className="w-4 h-4" />}
+                      </Button>
+                    </div>
+                    {importError && <p className="text-xs text-destructive">{importError}</p>}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </DialogContent>
+          </Dialog>
+          
+          {/* Diff Mode Toggle */}
+          {onOpenDiff && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant={isDiffOpen ? 'secondary' : 'ghost'} 
+                  size="icon" 
+                  onClick={onOpenDiff}
+                  disabled={!isValid}
+                >
+                  <ArrowLeftRight className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Compare JSON</TooltipContent>
+            </Tooltip>
+          )}
 
           <div className="w-px h-6 bg-border mx-1" />
 
