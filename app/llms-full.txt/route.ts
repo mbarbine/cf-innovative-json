@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server'
 import { openApiSpec } from '@/lib/openapi'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://json-tree.vercel.app'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'
 
 export async function GET() {
-  const content = `# JSON Tree - Full LLM Documentation
+  const content = `# JSON Tree by Platphorm News - Full LLM Documentation
 
 > Complete documentation for AI/LLM integration with JSON Tree
+> Version: 0.0.1
 
 ## Overview
 
@@ -317,7 +318,9 @@ HTTP Status Codes:
 
 ## Support
 
-Email: support@json-tree.vercel.app
+Built by Platphorm News
+Website: https://platphormnews.com
+Email: support@platphormnews.com
 `
 
   return new NextResponse(content, {
