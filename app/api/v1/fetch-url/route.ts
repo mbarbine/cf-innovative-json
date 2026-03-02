@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createApiResponse, createErrorResponse, generateRequestId } from '@/lib/api-utils'
+import { NextRequest } from 'next/server'
+import { apiResponse, apiError, generateRequestId } from '@/lib/api-utils'
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId()
@@ -9,10 +9,7 @@ export async function POST(request: NextRequest) {
     const { url } = body
     
     if (!url || typeof url !== 'string') {
-      return NextResponse.json(
-        createErrorResponse('URL is required', requestId),
-        { status: 400 }
-      )
+      return apiError('URL is required', 400, requestId)
     }
     
     // Validate URL format
@@ -20,18 +17,12 @@ export async function POST(request: NextRequest) {
     try {
       parsedUrl = new URL(url)
     } catch {
-      return NextResponse.json(
-        createErrorResponse('Invalid URL format', requestId),
-        { status: 400 }
-      )
+      return apiError('Invalid URL format', 400, requestId)
     }
     
     // Only allow http/https protocols
     if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
-      return NextResponse.json(
-        createErrorResponse('Only HTTP and HTTPS URLs are supported', requestId),
-        { status: 400 }
-      )
+      return apiError('Only HTTP and HTTPS URLs are supported', 400, requestId)
     }
     
     // Fetch the JSON from the URL
@@ -44,10 +35,7 @@ export async function POST(request: NextRequest) {
     })
     
     if (!response.ok) {
-      return NextResponse.json(
-        createErrorResponse(`Failed to fetch URL: ${response.status} ${response.statusText}`, requestId),
-        { status: 502 }
-      )
+      return apiError(`Failed to fetch URL: ${response.status} ${response.statusText}`, 502, requestId)
     }
     
     const text = await response.text()
@@ -56,42 +44,29 @@ export async function POST(request: NextRequest) {
     try {
       JSON.parse(text)
     } catch {
-      return NextResponse.json(
-        createErrorResponse('URL does not return valid JSON', requestId),
-        { status: 422 }
-      )
+      return apiError('URL does not return valid JSON', 422, requestId)
     }
     
     // Limit response size (5MB max)
     if (text.length > 5 * 1024 * 1024) {
-      return NextResponse.json(
-        createErrorResponse('JSON response is too large (max 5MB)', requestId),
-        { status: 413 }
-      )
+      return apiError('JSON response is too large (max 5MB)', 413, requestId)
     }
     
-    return NextResponse.json(
-      createApiResponse({ 
-        json: text,
-        url: url,
-        size: text.length,
-        contentType: response.headers.get('content-type')
-      }, requestId)
-    )
+    return apiResponse({ 
+      json: text,
+      url: url,
+      size: text.length,
+      contentType: response.headers.get('content-type')
+    }, 200, requestId)
   } catch (error) {
     if (error instanceof Error && error.name === 'TimeoutError') {
-      return NextResponse.json(
-        createErrorResponse('Request timed out', requestId),
-        { status: 504 }
-      )
+      return apiError('Request timed out', 504, requestId)
     }
     
-    return NextResponse.json(
-      createErrorResponse(
-        error instanceof Error ? error.message : 'Failed to fetch URL',
-        requestId
-      ),
-      { status: 500 }
+    return apiError(
+      error instanceof Error ? error.message : 'Failed to fetch URL',
+      500,
+      requestId
     )
   }
 }

@@ -1,7 +1,8 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Github, ExternalLink, FileJson2, BookOpen } from 'lucide-react'
+import { Github, ExternalLink, FileJson2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -14,6 +15,12 @@ import {
 const APP_VERSION = '0.0.1'
 
 export function Header() {
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   return (
     <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-background">
       <div className="flex items-center gap-3">
@@ -32,34 +39,40 @@ export function Header() {
       </div>
 
       <nav className="flex items-center gap-2">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="sm">
-              API
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem asChild>
-              <Link href="/api/docs" className="flex items-center gap-2">
-                <FileJson2 className="w-4 h-4" />
-                API Documentation
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link href="/api/health" className="flex items-center gap-2">
-                <ExternalLink className="w-4 h-4" />
-                Health Check
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link href="/api/mcp" className="flex items-center gap-2">
-                <ExternalLink className="w-4 h-4" />
-                MCP Server
-              </Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        {mounted ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                API
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/docs" className="flex items-center gap-2">
+                  <FileJson2 className="w-4 h-4" />
+                  API Documentation
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/api/health" className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  Health Check
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/api/mcp" className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  MCP Server
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button variant="ghost" size="sm">
+            API
+          </Button>
+        )}
 
         <Button variant="ghost" size="sm" asChild>
           <Link href="/llms.txt">
@@ -69,7 +82,7 @@ export function Header() {
 
         <Button variant="ghost" size="icon" asChild>
           <a 
-            href="https://github.com" 
+            href="https://github.com/mbarbine/json-tree-webby" 
             target="_blank" 
             rel="noopener noreferrer"
             aria-label="GitHub"
