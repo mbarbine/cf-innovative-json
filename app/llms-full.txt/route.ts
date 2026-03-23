@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { openApiSpec } from '@/lib/openapi'
+import { corsHeaders } from '@/lib/api-utils'
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'
 
@@ -325,8 +325,16 @@ Email: support@platphormnews.com
 
   return new NextResponse(content, {
     headers: {
+      ...corsHeaders(),
       'Content-Type': 'text/plain; charset=utf-8',
       'Cache-Control': 'public, max-age=86400, s-maxage=86400',
     },
+  })
+}
+
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: corsHeaders(),
   })
 }

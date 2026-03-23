@@ -54,17 +54,21 @@ export function JsonEditor({ value, onChange, isValid, error, className }: JsonE
     <div className={cn('flex flex-col h-full', className)}>
       <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
         <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-foreground">JSON</span>
-          <span className={cn(
-            'px-2 py-0.5 text-xs rounded-full font-medium',
-            isValid 
-              ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-              : 'bg-destructive/10 text-destructive'
-          )}>
+          <span className="text-sm font-medium text-foreground">JSON Editor</span>
+          <span
+            className={cn(
+              'px-2 py-0.5 text-xs rounded-full font-medium',
+              isValid
+                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                : 'bg-destructive/10 text-destructive'
+            )}
+            role="status"
+            aria-label={isValid ? "JSON is valid" : "JSON is invalid"}
+          >
             {isValid ? 'Valid' : 'Invalid'}
           </span>
         </div>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-muted-foreground" aria-hidden="true">
           {lineCount} lines
         </span>
       </div>
@@ -98,11 +102,18 @@ export function JsonEditor({ value, onChange, isValid, error, className }: JsonE
             'placeholder:text-muted-foreground'
           )}
           placeholder="Paste your JSON here..."
+          aria-label="JSON Input Area"
+          aria-invalid={!isValid}
+          aria-errormessage={error ? 'json-editor-error' : undefined}
         />
       </div>
       
       {error && (
-        <div className="px-3 py-2 text-xs text-destructive bg-destructive/5 border-t border-destructive/20">
+        <div
+          id="json-editor-error"
+          className="px-3 py-2 text-xs text-destructive bg-destructive/5 border-t border-destructive/20"
+          role="alert"
+        >
           {error}
         </div>
       )}

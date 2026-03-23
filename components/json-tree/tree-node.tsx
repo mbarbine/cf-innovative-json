@@ -70,7 +70,7 @@ export const TreeNodeComponent = memo(function TreeNodeComponent({
       const childCount = node.children!.length
       const brackets = node.type === 'array' ? '[]' : '{}'
       return (
-        <span className="text-muted-foreground">
+        <span className="text-muted-foreground" aria-label={`${childCount} items`}>
           {brackets[0]}
           {!isExpanded && (
             <span className="text-xs ml-1">
@@ -84,7 +84,7 @@ export const TreeNodeComponent = memo(function TreeNodeComponent({
 
     const valueStr = formatValue(node.value, node.type)
     return (
-      <span className={cn('font-mono', getValueColor(node.type))}>
+      <span className={cn('font-mono', getValueColor(node.type))} aria-label={`${node.type} value ${valueStr}`}>
         {truncateValue(searchQuery ? String(highlightMatch(valueStr, searchQuery)) : valueStr, 50)}
       </span>
     )
@@ -97,18 +97,29 @@ export const TreeNodeComponent = memo(function TreeNodeComponent({
         isSelected && 'bg-accent rounded'
       )}
       style={{ paddingLeft: isRoot ? 0 : node.depth * 16 }}
+      role="treeitem"
+      aria-expanded={hasChildren ? isExpanded : undefined}
+      aria-selected={isSelected}
     >
       <div
         onClick={() => {
           onSelect(node.id)
           if (hasChildren) onToggle(node.id)
         }}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onSelect(node.id)
+            if (hasChildren) onToggle(node.id)
+          }
+        }}
+        tabIndex={0}
         className={cn(
           'flex items-center gap-1 py-1 px-2 rounded cursor-pointer',
-          'hover:bg-accent/50 transition-colors'
+          'hover:bg-accent/50 transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
         )}
       >
-        <span className="w-4 h-4 flex items-center justify-center flex-shrink-0">
+        <span className="w-4 h-4 flex items-center justify-center flex-shrink-0" aria-hidden="true">
           {hasChildren && (
             <ChevronRight
               className={cn(
@@ -121,13 +132,16 @@ export const TreeNodeComponent = memo(function TreeNodeComponent({
 
         {!isRoot && (
           <>
-            <span className={cn(
-              'font-mono text-sm',
-              node.type === 'array' ? 'text-blue-500 dark:text-blue-400' : 'text-foreground'
-            )}>
+            <span
+              className={cn(
+                'font-mono text-sm',
+                node.type === 'array' ? 'text-blue-500 dark:text-blue-400' : 'text-foreground'
+              )}
+              aria-label={`Key ${node.key}`}
+            >
               {searchQuery ? highlightMatch(node.key, searchQuery) : node.key}
             </span>
-            <span className="text-muted-foreground mx-1">:</span>
+            <span className="text-muted-foreground mx-1" aria-hidden="true">:</span>
           </>
         )}
 
@@ -136,16 +150,18 @@ export const TreeNodeComponent = memo(function TreeNodeComponent({
         <button
           onClick={handleCopy}
           className={cn(
-            'ml-auto p-1 rounded opacity-0 group-hover:opacity-100',
+            'ml-auto p-1 rounded opacity-0 group-hover:opacity-100 focus:opacity-100',
             'hover:bg-muted transition-all',
-            'text-muted-foreground hover:text-foreground'
+            'text-muted-foreground hover:text-foreground',
+            'focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring'
           )}
           title="Copy value"
+          aria-label={`Copy value of ${node.key || 'root'}`}
         >
           {copied ? (
-            <Check className="w-3.5 h-3.5 text-emerald-500" />
+            <Check className="w-3.5 h-3.5 text-emerald-500" aria-hidden="true" />
           ) : (
-            <Copy className="w-3.5 h-3.5" />
+            <Copy className="w-3.5 h-3.5" aria-hidden="true" />
           )}
         </button>
       </div>
