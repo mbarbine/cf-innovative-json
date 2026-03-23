@@ -1,40 +1,51 @@
 'use client'
 
-import { useState, useCallback } from 'react'
-import { 
-  Search, 
-  TreePine, 
-  Network, 
+import { useState, useCallback, useEffect } from 'react'
+import {
+  ListTree,
+  Network,
   Code2,
   Expand,
   Shrink,
-  Copy,
-  Download,
-  Upload,
-  Undo2,
-  Redo2,
+  Search,
   Wand2,
   Minimize2,
+  Copy,
   Check,
-  Sun,
+  Undo2,
+  Redo2,
   Moon,
+  Sun,
   Keyboard,
-  ArrowLeftRight,
   Link2,
-  X
+  Download,
+  Upload,
+  ArrowLeftRight
 } from 'lucide-react'
+import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider
+} from '@/components/ui/tooltip'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+  DialogDescription
+} from '@/components/ui/dialog'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Label } from "@/components/ui/label"
 import { Kbd } from '@/components/ui/kbd'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Label } from '@/components/ui/label'
-import { cn } from '@/lib/utils'
+import { formatJson, minifyJson } from '@/lib/json-utils'
+import { createShareUrl, fetchJsonFromUrl } from '@/lib/sharing'
 import type { ViewMode, TreeStats } from '@/lib/types'
-import { formatJson, minifyJson, copyToClipboard } from '@/lib/json-utils'
-import { createShareUrl } from '@/lib/sharing'
-import { useTheme } from 'next-themes'
+import { cn } from '@/lib/utils'
 
 interface ToolbarProps {
   viewMode: ViewMode
@@ -56,26 +67,6 @@ interface ToolbarProps {
   isDiffOpen?: boolean
 }
 
-const viewModes: { value: ViewMode; label: string; icon: React.ReactNode }[] = [
-  { value: 'tree', label: 'Tree', icon: <TreePine className="w-4 h-4" /> },
-  { value: 'graph', label: 'Graph', icon: <Network className="w-4 h-4" /> },
-  { value: 'raw', label: 'Raw', icon: <Code2 className="w-4 h-4" /> },
-]
-
-const shortcuts = [
-  { keys: ['Ctrl', 'F'], description: 'Search' },
-  { keys: ['Ctrl', 'Z'], description: 'Undo' },
-  { keys: ['Ctrl', 'Shift', 'Z'], description: 'Redo' },
-  { keys: ['Ctrl', 'Shift', 'F'], description: 'Format JSON' },
-  { keys: ['Ctrl', 'Shift', 'M'], description: 'Minify JSON' },
-  { keys: ['Ctrl', 'Shift', 'C'], description: 'Copy all' },
-  { keys: ['Ctrl', 'E'], description: 'Expand all' },
-  { keys: ['Ctrl', 'Shift', 'E'], description: 'Collapse all' },
-  { keys: ['1'], description: 'Tree view' },
-  { keys: ['2'], description: 'Graph view' },
-  { keys: ['3'], description: 'Raw view' },
-]
-
 export function Toolbar({
   viewMode,
   setViewMode,
@@ -95,98 +86,128 @@ export function Toolbar({
   onOpenDiff,
   isDiffOpen
 }: ToolbarProps) {
+  const { theme, setTheme } = useTheme()
   const [copied, setCopied] = useState(false)
   const [shareCopied, setShareCopied] = useState(false)
   const [shareUrl, setShareUrl] = useState('')
   const [importUrl, setImportUrl] = useState('')
   const [importing, setImporting] = useState(false)
   const [importError, setImportError] = useState<string | null>(null)
-  const { theme, setTheme } = useTheme()
+  const [mounted, setMounted] = useState(false)
+
+  // Avoid hydration mismatch for theme
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const handleFormat = useCallback(() => {
+    if (!isValid) return
+    try {
+      setRawJson(formatJson(rawJson, 2))
+    } catch {}
+  }, [rawJson, setRawJson, isValid])
+
+  const handleMinify = useCallback(() => {
+    if (!isValid) return
+    try {
+      setRawJson(minifyJson(rawJson))
+    } catch {}
+  }, [rawJson, setRawJson, isValid])
+
+  const handleCopy = useCallback(async () => {
+    await navigator.clipboard.writeText(rawJson)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }, [rawJson])
   
   const handleShareLink = useCallback(async () => {
     if (!isValid) return
     const url = createShareUrl({ json: rawJson, viewMode })
     setShareUrl(url)
-    await copyToClipboard(url)
+    await navigator.clipboard.writeText(url)
     setShareCopied(true)
     setTimeout(() => setShareCopied(false), 2000)
   }, [rawJson, viewMode, isValid])
   
   const handleImportFromUrl = useCallback(async () => {
-    if (!importUrl.trim()) return
-    
+    if (!importUrl) return
     setImporting(true)
     setImportError(null)
-    
     try {
-      const response = await fetch('/api/v1/fetch-url', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url: importUrl })
-      })
-      
-      const data = await response.json()
-      
-      if (data.success && data.data?.json) {
-        setRawJson(data.data.json)
-        setImportUrl('')
-      } else {
-        throw new Error(data.error || 'Failed to fetch JSON')
-      }
-    } catch (err) {
-      setImportError(err instanceof Error ? err.message : 'Failed to import')
+      // Create a proxy request or just fetch directly if CORS allows
+      const json = await fetchJsonFromUrl(importUrl)
+      setRawJson(json)
+    } catch (error) {
+      setImportError((error as Error).message)
     } finally {
       setImporting(false)
     }
   }, [importUrl, setRawJson])
 
-  const handleFormat = () => {
-    try {
-      setRawJson(formatJson(rawJson, 2))
-    } catch {}
-  }
-
-  const handleMinify = () => {
-    try {
-      setRawJson(minifyJson(rawJson))
-    } catch {}
-  }
-
-  const handleCopy = async () => {
-    await copyToClipboard(rawJson)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
-  }
-
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
+    if (!isValid) return
     const blob = new Blob([rawJson], { type: 'application/json' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = 'data.json'
+    a.download = `data-${Date.now()}.json`
+    document.body.appendChild(a)
     a.click()
+    document.body.removeChild(a)
     URL.revokeObjectURL(url)
-  }
+  }, [rawJson, isValid])
 
-  const handleUpload = () => {
+  const handleUpload = useCallback(() => {
     const input = document.createElement('input')
     input.type = 'file'
     input.accept = '.json,application/json'
-    input.onchange = async (e) => {
+    input.onchange = (e) => {
       const file = (e.target as HTMLInputElement).files?.[0]
-      if (file) {
-        const text = await file.text()
-        setRawJson(text)
+      if (!file) return
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const result = e.target?.result
+        if (typeof result === 'string') {
+          setRawJson(result)
+        }
       }
+      reader.readAsText(file)
     }
     input.click()
-  }
+  }, [setRawJson])
+
+  const viewModes: { value: ViewMode; label: string; icon: React.ReactNode }[] = [
+    { value: 'tree', label: 'Tree', icon: <ListTree className="w-4 h-4" /> },
+    { value: 'graph', label: 'Graph', icon: <Network className="w-4 h-4" /> },
+    { value: 'raw', label: 'Raw', icon: <Code2 className="w-4 h-4" /> }
+  ]
+
+  const shortcuts = [
+    { keys: ['Ctrl/Cmd', 'Z'], description: 'Undo' },
+    { keys: ['Ctrl/Cmd', 'Shift', 'Z'], description: 'Redo' },
+    { keys: ['Ctrl/Cmd', 'E'], description: 'Expand All' },
+    { keys: ['Ctrl/Cmd', 'Shift', 'E'], description: 'Collapse All' },
+    { keys: ['Ctrl/Cmd', 'Shift', 'F'], description: 'Format JSON' },
+    { keys: ['Ctrl/Cmd', 'Shift', 'M'], description: 'Minify JSON' },
+    { keys: ['Ctrl/Cmd', 'D'], description: 'Toggle Diff View' },
+    { keys: ['1', '2', '3'], description: 'Switch View Modes' }
+  ]
+
+  if (!mounted) return null
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 border-b border-border bg-background">
+      <div
+        className="flex flex-wrap items-center gap-2 p-2 border-b border-border bg-card"
+        role="toolbar"
+        aria-label="JSON Tree actions"
+      >
         {/* View Mode Toggle */}
-        <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
+        <div
+          className="flex items-center gap-1 bg-muted p-1 rounded-lg"
+          role="group"
+          aria-label="View modes"
+        >
           {viewModes.map(({ value, label, icon }) => (
             <Tooltip key={value}>
               <TooltipTrigger asChild>
@@ -198,6 +219,8 @@ export function Toolbar({
                     viewMode === value && 'bg-background shadow-sm'
                   )}
                   onClick={() => setViewMode(value)}
+                  aria-label={`${label} View`}
+                  aria-pressed={viewMode === value}
                 >
                   {icon}
                   <span className="hidden sm:inline">{label}</span>
@@ -209,26 +232,34 @@ export function Toolbar({
         </div>
 
         {/* Search */}
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <div className="relative flex-1 max-w-sm" role="search">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
           <Input
             placeholder="Search keys or values..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 pr-16"
+            aria-label="Search JSON"
           />
           {searchQuery && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">
+            <span
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
+              aria-live="polite"
+            >
               {searchResultCount} found
             </span>
           )}
         </div>
 
         {/* Actions */}
-        <div className="flex items-center gap-1">
+        <div
+          className="flex items-center gap-1"
+          role="group"
+          aria-label="JSON operations"
+        >
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={undo} disabled={!canUndo}>
+              <Button variant="ghost" size="icon" onClick={undo} disabled={!canUndo} aria-label="Undo">
                 <Undo2 className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
@@ -237,18 +268,18 @@ export function Toolbar({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={redo} disabled={!canRedo}>
+              <Button variant="ghost" size="icon" onClick={redo} disabled={!canRedo} aria-label="Redo">
                 <Redo2 className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Redo (Ctrl+Shift+Z)</TooltipContent>
           </Tooltip>
 
-          <div className="w-px h-6 bg-border mx-1" />
+          <div className="w-px h-6 bg-border mx-1" aria-hidden="true" />
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={expandAll}>
+              <Button variant="ghost" size="icon" onClick={expandAll} aria-label="Expand All">
                 <Expand className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
@@ -257,18 +288,18 @@ export function Toolbar({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={collapseAll}>
+              <Button variant="ghost" size="icon" onClick={collapseAll} aria-label="Collapse All">
                 <Shrink className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Collapse All</TooltipContent>
           </Tooltip>
 
-          <div className="w-px h-6 bg-border mx-1" />
+          <div className="w-px h-6 bg-border mx-1" aria-hidden="true" />
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleFormat} disabled={!isValid}>
+              <Button variant="ghost" size="icon" onClick={handleFormat} disabled={!isValid} aria-label="Format JSON">
                 <Wand2 className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
@@ -277,18 +308,18 @@ export function Toolbar({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleMinify} disabled={!isValid}>
+              <Button variant="ghost" size="icon" onClick={handleMinify} disabled={!isValid} aria-label="Minify JSON">
                 <Minimize2 className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Minify (Ctrl+Shift+M)</TooltipContent>
           </Tooltip>
 
-          <div className="w-px h-6 bg-border mx-1" />
+          <div className="w-px h-6 bg-border mx-1" aria-hidden="true" />
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleCopy}>
+              <Button variant="ghost" size="icon" onClick={handleCopy} aria-label="Copy All">
                 {copied ? (
                   <Check className="w-4 h-4 text-emerald-500" />
                 ) : (
@@ -301,7 +332,7 @@ export function Toolbar({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleDownload} disabled={!isValid}>
+              <Button variant="ghost" size="icon" onClick={handleDownload} disabled={!isValid} aria-label="Download JSON">
                 <Download className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
@@ -310,19 +341,19 @@ export function Toolbar({
 
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="ghost" size="icon" onClick={handleUpload}>
+              <Button variant="ghost" size="icon" onClick={handleUpload} aria-label="Upload JSON">
                 <Upload className="w-4 h-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>Upload File</TooltipContent>
           </Tooltip>
 
-          <div className="w-px h-6 bg-border mx-1" />
+          <div className="w-px h-6 bg-border mx-1" aria-hidden="true" />
           
           {/* Share & Import Dialog */}
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!isValid}>
+              <Button variant="ghost" size="icon" disabled={!isValid} aria-label="Share or Import JSON">
                 <Link2 className="w-4 h-4" />
               </Button>
             </DialogTrigger>
@@ -344,8 +375,9 @@ export function Toolbar({
                         value={shareUrl || 'Click to generate link...'}
                         readOnly
                         className="font-mono text-xs h-9"
+                        aria-label="Share URL"
                       />
-                      <Button size="sm" onClick={handleShareLink} disabled={!isValid}>
+                      <Button size="sm" onClick={handleShareLink} disabled={!isValid} aria-label="Copy Share URL">
                         {shareCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                       </Button>
                     </div>
@@ -361,12 +393,13 @@ export function Toolbar({
                         onChange={(e) => { setImportUrl(e.target.value); setImportError(null) }}
                         placeholder="https://api.example.com/data.json"
                         className="font-mono text-xs h-9"
+                        aria-label="Import URL"
                       />
-                      <Button size="sm" onClick={handleImportFromUrl} disabled={importing || !importUrl.trim()}>
+                      <Button size="sm" onClick={handleImportFromUrl} disabled={importing || !importUrl.trim()} aria-label="Import Data">
                         {importing ? '...' : <Download className="w-4 h-4" />}
                       </Button>
                     </div>
-                    {importError && <p className="text-xs text-destructive">{importError}</p>}
+                    {importError && <p className="text-xs text-destructive" role="alert">{importError}</p>}
                   </div>
                 </TabsContent>
               </Tabs>
@@ -382,6 +415,8 @@ export function Toolbar({
                   size="icon" 
                   onClick={onOpenDiff}
                   disabled={!isValid}
+                  aria-label="Compare JSON"
+                  aria-pressed={isDiffOpen}
                 >
                   <ArrowLeftRight className="w-4 h-4" />
                 </Button>
@@ -390,7 +425,7 @@ export function Toolbar({
             </Tooltip>
           )}
 
-          <div className="w-px h-6 bg-border mx-1" />
+          <div className="w-px h-6 bg-border mx-1" aria-hidden="true" />
 
           <Tooltip>
             <TooltipTrigger asChild>
@@ -398,6 +433,7 @@ export function Toolbar({
                 variant="ghost" 
                 size="icon" 
                 onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
               >
                 {theme === 'dark' ? (
                   <Sun className="w-4 h-4" />
@@ -411,13 +447,14 @@ export function Toolbar({
 
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" size="icon" aria-label="Keyboard Shortcuts">
                 <Keyboard className="w-4 h-4" />
               </Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Keyboard Shortcuts</DialogTitle>
+                <DialogDescription>Keyboard combinations to navigate and control the editor.</DialogDescription>
               </DialogHeader>
               <div className="grid gap-3 py-4">
                 {shortcuts.map(({ keys, description }) => (
@@ -437,9 +474,13 @@ export function Toolbar({
 
         {/* Stats */}
         {stats && (
-          <div className="hidden lg:flex items-center gap-3 text-xs text-muted-foreground ml-auto">
+          <div
+            className="hidden lg:flex items-center gap-3 text-xs text-muted-foreground ml-auto"
+            role="status"
+            aria-label="JSON Statistics"
+          >
             <span>{stats.totalNodes} nodes</span>
-            <span className="text-border">|</span>
+            <span className="text-border" aria-hidden="true">|</span>
             <span>Depth: {stats.maxDepth}</span>
           </div>
         )}
