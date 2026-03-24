@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platphormnews.com/schemas/agent.schema.json",
+  "title": "Agent Types",
+  "description": "Agents, runs, and tool calls",
+  "$defs": {
+    "agent": {
+      "type": "object",
+      "required": [
+        "id",
+        "slug",
+        "name",
+        "agent_type",
+        "active",
+        "created_at",
+        "updated_at"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "realm_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "slug": {
+          "$ref": "#/$defs/slug"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "agent_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "capability_profile": {
+          "type": "object",
+          "default": {}
+        },
+        "trust_level": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "low",
+            "standard",
+            "elevated",
+            "high",
+            "verified",
+            "restricted",
+            "network-observable",
+            null
+          ],
+          "default": null
+        },
+        "active": {
+          "type": "boolean",
+          "default": true
+        },
+        "created_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/timestamp"
+        }
+      },
+      "additionalProperties": false
+    },
+    "agentRun": {
+      "type": "object",
+      "required": [
+        "id",
+        "agent_id",
+        "status",
+        "started_at"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "agent_id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "realm_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "trace_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "correlation_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "session_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "trigger_type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "trigger_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "inactive",
+            "draft",
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "archived",
+            "deleted"
+          ]
+        },
+        "started_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "completed_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metadata": {
+          "type": "object",
+          "default": {}
+        }
+      },
+      "additionalProperties": false
+    },
+    "toolCall": {
+      "type": "object",
+      "required": [
+        "id",
+        "agent_run_id",
+        "tool_name",
+        "status",
+        "started_at"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "agent_run_id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "tool_name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "input_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "output_hash": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "inactive",
+            "draft",
+            "queued",
+            "running",
+            "succeeded",
+            "failed",
+            "archived",
+            "deleted"
+          ]
+        },
+        "duration_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "default": null
+        },
+        "error_code": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "trace_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "started_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "completed_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metadata": {
+          "type": "object",
+          "default": {}
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

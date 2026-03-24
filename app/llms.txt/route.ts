@@ -1,87 +1,67 @@
 import { NextResponse } from 'next/server'
 import { corsHeaders } from '@/lib/api-utils'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://docs.platphormnews.com'
 
 export async function GET() {
-  const content = `# JSON Tree by Platphorm News
+  const content = `# PlatPhorm Schema Registry
 
-> A powerful JSON visualization and manipulation tool for developers
-> Version: 0.0.1
+> The universal contract and schema registry for the PlatPhorm network.
+> Version: 1.0.0
 
 ## Overview
 
-JSON Tree is a web application that provides:
-- Interactive tree visualization of JSON data
-- Graph-based visualization for complex structures
-- JSON formatting, minification, and validation
-- Search functionality across keys and values
-- REST API for programmatic access
-- MCP (Model Context Protocol) server for AI integration
+PlatPhorm Schema Registry is the core documentation platform that exposes:
+- The PlatPhorm Universal Schema Pack
+- API Reference & MCP Integration
+- Network API & JSON-LD
+- REST/MCP examples
 
 ## Website
 ${BASE_URL}
 
+## Core Contract Files
+
+The following strict JSON schema files define the network:
+- ${BASE_URL}/schemas/json/platphorm-universal-schema-pack.json
+- ${BASE_URL}/schemas/json/core.schema.json
+- ${BASE_URL}/schemas/json/realm.schema.json
+- ${BASE_URL}/schemas/json/item.schema.json
+- ${BASE_URL}/schemas/json/observability.schema.json
+- ${BASE_URL}/schemas/json/agent.schema.json
+
 ## API Endpoints
 
-Base URL: ${BASE_URL}/api/v1
+The network supports the v0 standard endpoints:
+- GET /v0/universes
+- GET /v0/realms
+- GET /v0/realm/{id}/items
 
-### Parse JSON
-POST /api/v1/parse
-- Input: { "json": "<json-string>", "options": { "includeStats": true } }
-- Output: Tree structure with statistics
-
-### Format JSON
-POST /api/v1/format
-- Input: { "json": "<json-string>", "indent": 2 }
-- Output: Formatted JSON string
-
-### Minify JSON
-POST /api/v1/minify
-- Input: { "json": "<json-string>" }
-- Output: Minified JSON string
-
-### Validate JSON
-POST /api/v1/validate
-- Input: { "json": "<json-string>" }
-- Output: Validation result with error details
-
-### Diff JSON
-POST /api/v1/diff
-- Input: { "source": "<json-string>", "target": "<json-string>" }
-- Output: Differences between two JSON objects
+### System Endpoints
+- GET /api/health
+- GET /api/docs (OpenAPI 3.1)
+- GET /.well-known/platphorm.json
 
 ## MCP Server
 
-JSON Tree includes an MCP server for AI agent integration.
-
 Endpoint: ${BASE_URL}/api/mcp
 
-### Available Tools
-
-1. **parse_json** - Parse JSON into a tree structure
-2. **format_json** - Pretty-print JSON
-3. **minify_json** - Remove whitespace from JSON
-4. **validate_json** - Check if JSON is valid
-5. **diff_json** - Compare two JSON objects
-6. **search_json** - Search within JSON structure
-7. **get_json_stats** - Get statistics about JSON
-
-## Rate Limits
-
-- 100 requests per minute per IP
-- No authentication required for basic usage
-
-## Documentation
-
-- OpenAPI Spec: ${BASE_URL}/api/docs
-- MCP Info: ${BASE_URL}/api/mcp
+### Required Tools
+- network.get_universe
+- network.list_realms
+- network.get_realm
+- network.get_trace
+- network.get_request
+- network.get_provenance
+- network.get_fingerprint
+- network.get_agent_run
+- content.get_item
+- content.search
 
 ## Contact
 
-Built by Platphorm News
+Built by PlatPhorm
 Website: https://platphormnews.com
-Support: support@platphormnews.com
 `
 
   return new NextResponse(content, {

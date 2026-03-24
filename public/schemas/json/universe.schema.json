@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platphormnews.com/schemas/universe.schema.json",
+  "title": "Universe",
+  "description": "A PlatPhorm Universe",
+  "type": "object",
+  "required": [
+    "id",
+    "slug",
+    "name",
+    "environment",
+    "visibility",
+    "trust_level",
+    "feature_tags",
+    "environment_tags",
+    "governance_tags"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/idInteger"
+    },
+    "slug": {
+      "$ref": "#/$defs/slug"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "owner_org": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "staging",
+        "development",
+        "preview",
+        "sandbox",
+        "internal",
+        "partner",
+        "customer"
+      ],
+      "default": "production"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private",
+        "unlisted",
+        "network-internal",
+        "agent-only",
+        "partner-shared",
+        "customer-isolated"
+      ],
+      "default": "public"
+    },
+    "trust_level": {
+      "type": "string",
+      "enum": [
+        "low",
+        "standard",
+        "elevated",
+        "high",
+        "verified",
+        "restricted",
+        "network-observable"
+      ],
+      "default": "network-observable"
+    },
+    "feature_tags": {
+      "$ref": "#/$defs/tags"
+    },
+    "environment_tags": {
+      "$ref": "#/$defs/tags"
+    },
+    "governance_tags": {
+      "$ref": "#/$defs/tags"
+    },
+    "defaults": {
+      "type": "object",
+      "properties": {
+        "trace_capture": {
+          "type": "boolean",
+          "default": true
+        },
+        "fingerprint_capture": {
+          "type": "boolean",
+          "default": true
+        },
+        "agent_execution_capture": {
+          "type": "boolean",
+          "default": true
+        },
+        "network_visible": {
+          "type": "boolean",
+          "default": true
+        }
+      },
+      "additionalProperties": false,
+      "default": {}
+    }
+  },
+  "additionalProperties": false
+}

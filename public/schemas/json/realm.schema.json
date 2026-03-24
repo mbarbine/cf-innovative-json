@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platphormnews.com/schemas/realm.schema.json",
+  "title": "Realm",
+  "description": "A PlatPhorm Realm",
+  "type": "object",
+  "required": [
+    "id",
+    "universe_id",
+    "slug",
+    "name",
+    "realm_type",
+    "primary_domain",
+    "canonical_url",
+    "environment",
+    "visibility",
+    "feature_tags",
+    "environment_tags",
+    "governance_tags"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/idInteger"
+    },
+    "universe_id": {
+      "$ref": "#/$defs/idInteger"
+    },
+    "slug": {
+      "$ref": "#/$defs/slug"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "realm_type": {
+      "type": "string",
+      "enum": [
+        "content-platform",
+        "documentation-platform",
+        "observability-platform",
+        "evaluation-platform",
+        "data-platform",
+        "search-platform",
+        "network-platform",
+        "application-platform",
+        "experiment-platform",
+        "utility-platform"
+      ]
+    },
+    "primary_domain": {
+      "type": "string",
+      "minLength": 1
+    },
+    "canonical_url": {
+      "$ref": "#/$defs/url"
+    },
+    "network_manifest_url": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/url"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "llms_url": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/url"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "mcp_url": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/url"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "docs_url": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/url"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "health_url": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/url"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "staging",
+        "development",
+        "preview",
+        "sandbox",
+        "internal",
+        "partner",
+        "customer"
+      ],
+      "default": "production"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private",
+        "unlisted",
+        "network-internal",
+        "agent-only",
+        "partner-shared",
+        "customer-isolated"
+      ],
+      "default": "public"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "draft",
+        "queued",
+        "running",
+        "succeeded",
+        "failed",
+        "archived",
+        "deleted"
+      ],
+      "default": "active"
+    },
+    "feature_tags": {
+      "$ref": "#/$defs/tags"
+    },
+    "environment_tags": {
+      "$ref": "#/$defs/tags"
+    },
+    "governance_tags": {
+      "$ref": "#/$defs/tags"
+    },
+    "capabilities": {
+      "type": "object",
+      "properties": {
+        "content_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        }
+      },
+      "additionalProperties": true,
+      "default": {}
+    },
+    "policy_profile": {
+      "$ref": "#/$defs/commonPolicyProfile"
+    },
+    "observability_profile": {
+      "type": "string",
+      "default": "platphorm-default"
+    },
+    "fingerprint_profile": {
+      "type": "string",
+      "default": "platphorm-default"
+    }
+  },
+  "additionalProperties": false
+}
