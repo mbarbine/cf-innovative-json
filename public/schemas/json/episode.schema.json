@@ -1,0 +1,165 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platphormnews.com/schemas/episode.schema.json",
+  "title": "Episode",
+  "description": "A Podcast Episode",
+  "allOf": [
+    {
+      "$ref": "#/$defs/baseItem"
+    },
+    {
+      "type": "object",
+      "required": [
+        "type",
+        "podcast_id",
+        "feed_id",
+        "guid",
+        "slug"
+      ],
+      "properties": {
+        "type": {
+          "const": "episode"
+        },
+        "podcast_id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "feed_id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "guid": {
+          "type": "string",
+          "minLength": 1
+        },
+        "slug": {
+          "$ref": "#/$defs/slug"
+        },
+        "description_html": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "description_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "audio_url": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/url"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "audio_mime_type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "audio_bytes": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "default": null
+        },
+        "duration_seconds": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "default": null
+        },
+        "published_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "image": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "explicit": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "default": null
+        },
+        "episode_number": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "default": null
+        },
+        "season_number": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "default": null
+        },
+        "transcript_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "chapter_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/idInteger"
+          },
+          "default": []
+        },
+        "person_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/idInteger"
+          },
+          "default": []
+        },
+        "snapshot_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

@@ -1,326 +1,62 @@
 import { NextResponse } from 'next/server'
 import { corsHeaders } from '@/lib/api-utils'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://docs.platphormnews.com'
 
 export async function GET() {
-  const content = `# JSON Tree by Platphorm News - Full LLM Documentation
+  const content = `# PlatPhorm Schema Registry (Full)
 
-> Complete documentation for AI/LLM integration with JSON Tree
-> Version: 0.0.1
+This file contains the complete specification for the PlatPhorm Universal Schema Pack and how to interact with the API and MCP server.
 
 ## Overview
+PlatPhorm Schema Registry is the documentation and registry realm for the entire PlatPhorm network.
+It enforces the universal schema pack contract on all sub-realms.
 
-JSON Tree is a comprehensive JSON visualization and manipulation tool designed for developers and AI agents. It provides both a web interface and programmatic APIs for working with JSON data.
+## The Contract
 
-## Website
-${BASE_URL}
+Every site is a \`realm\`.
+Every realm belongs to a \`universe\`.
+Every route surface belongs to a \`namespace\`.
+Every content or operational record is an \`item\` or a typed extension of it.
 
-## Capabilities
+### Required Routes on All PlatPhorm Realms:
+- \`/\`
+- \`/api/health\`
+- \`/api/docs\`
+- \`/api/mcp\`
+- \`/llms.txt\`
+- \`/llms-full.txt\`
+- \`/llms-index.json\`
+- \`/.well-known/platphorm.json\`
+- \`/robots.txt\`
+- \`/sitemap.xml\`
+- \`/manifest.webmanifest\`
 
-### Web Interface Features
-- **Tree View**: Hierarchical visualization with collapsible nodes
-- **Graph View**: Network diagram visualization with zoom/pan
-- **Raw View**: Syntax-highlighted JSON text
-- **Search**: Real-time search across keys and values
-- **Format/Minify**: One-click JSON formatting and compression
-- **Statistics**: Node counts, depth analysis, type distribution
-- **Theme Support**: Light and dark mode
+## API Endpoints (v0)
 
-### API Features
-- RESTful API with JSON responses
-- Rate limiting (100 req/min per IP)
-- CORS enabled for browser usage
-- Request ID tracking
-- OpenAPI 3.1 specification
+- \`/v0/maxitem\`: Returns the max item ID
+- \`/v0/updates\`: Returns recent items
+- \`/v0/item/{id}\`: Returns a specific item
+- \`/v0/items?ids=1,2,3\`: Returns multiple items
+- \`/v0/search?q={query}\`: Search items
+- \`/v0/universes\`: List universes
+- \`/v0/realms\`: List realms
 
-## REST API Documentation
+## MCP Tools
 
-Base URL: ${BASE_URL}/api/v1
+The MCP Server exposed at \`/api/mcp\` provides the following required tools:
+- \`network.get_universe\`
+- \`network.list_realms\`
+- \`network.get_realm\`
+- \`network.get_trace\`
+- \`network.get_request\`
+- \`network.get_provenance\`
+- \`network.get_fingerprint\`
+- \`network.get_agent_run\`
+- \`content.get_item\`
+- \`content.search\`
 
-### Endpoints
-
-#### Health Check
-\`\`\`
-GET /api/health
-\`\`\`
-Returns server health status and version.
-
-#### Parse JSON
-\`\`\`
-POST /api/v1/parse
-Content-Type: application/json
-
-{
-  "json": "{\\"name\\": \\"test\\"}",
-  "options": {
-    "includeStats": true
-  }
-}
-\`\`\`
-
-Response:
-\`\`\`json
-{
-  "success": true,
-  "data": {
-    "tree": { ... },
-    "stats": {
-      "totalNodes": 2,
-      "maxDepth": 1,
-      "stringCount": 1,
-      "objectCount": 1
-    },
-    "valid": true
-  }
-}
-\`\`\`
-
-#### Format JSON
-\`\`\`
-POST /api/v1/format
-Content-Type: application/json
-
-{
-  "json": "{\\"a\\":1}",
-  "indent": 2
-}
-\`\`\`
-
-#### Minify JSON
-\`\`\`
-POST /api/v1/minify
-Content-Type: application/json
-
-{
-  "json": "{ \\"a\\": 1 }"
-}
-\`\`\`
-
-#### Validate JSON
-\`\`\`
-POST /api/v1/validate
-Content-Type: application/json
-
-{
-  "json": "{\\"valid\\": true}"
-}
-\`\`\`
-
-#### Diff JSON
-\`\`\`
-POST /api/v1/diff
-Content-Type: application/json
-
-{
-  "source": "{\\"a\\": 1}",
-  "target": "{\\"a\\": 2, \\"b\\": 3}"
-}
-\`\`\`
-
-## MCP Server Integration
-
-JSON Tree implements the Model Context Protocol (MCP) for seamless AI agent integration.
-
-### Connection
-\`\`\`
-Endpoint: ${BASE_URL}/api/mcp
-Protocol: MCP 2024-11-05
-Transport: HTTP POST (JSON-RPC 2.0)
-\`\`\`
-
-### Available Tools
-
-#### parse_json
-Parse a JSON string into a tree structure with statistics.
-\`\`\`json
-{
-  "name": "parse_json",
-  "arguments": {
-    "json": "{\\"key\\": \\"value\\"}",
-    "includeStats": true
-  }
-}
-\`\`\`
-
-#### format_json
-Format JSON with customizable indentation.
-\`\`\`json
-{
-  "name": "format_json",
-  "arguments": {
-    "json": "{\\"a\\":1}",
-    "indent": 2
-  }
-}
-\`\`\`
-
-#### minify_json
-Remove all whitespace from JSON.
-\`\`\`json
-{
-  "name": "minify_json",
-  "arguments": {
-    "json": "{ \\"a\\": 1 }"
-  }
-}
-\`\`\`
-
-#### validate_json
-Check if a string is valid JSON.
-\`\`\`json
-{
-  "name": "validate_json",
-  "arguments": {
-    "json": "{\\"test\\": true}"
-  }
-}
-\`\`\`
-
-#### diff_json
-Compare two JSON objects and find differences.
-\`\`\`json
-{
-  "name": "diff_json",
-  "arguments": {
-    "source": "{\\"a\\": 1}",
-    "target": "{\\"a\\": 2}"
-  }
-}
-\`\`\`
-
-#### search_json
-Search for keys or values within JSON.
-\`\`\`json
-{
-  "name": "search_json",
-  "arguments": {
-    "json": "{\\"name\\": \\"John\\", \\"city\\": \\"NYC\\"}",
-    "query": "John",
-    "caseSensitive": false
-  }
-}
-\`\`\`
-
-#### get_json_stats
-Get detailed statistics about JSON structure.
-\`\`\`json
-{
-  "name": "get_json_stats",
-  "arguments": {
-    "json": "{\\"items\\": [1, 2, 3]}"
-  }
-}
-\`\`\`
-
-### Example MCP Request
-\`\`\`json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "method": "tools/call",
-  "params": {
-    "name": "format_json",
-    "arguments": {
-      "json": "{\\"name\\":\\"test\\"}",
-      "indent": 2
-    }
-  }
-}
-\`\`\`
-
-### Example MCP Response
-\`\`\`json
-{
-  "jsonrpc": "2.0",
-  "id": 1,
-  "result": {
-    "content": [
-      {
-        "type": "text",
-        "text": "{\\"formatted\\": \\"{\\\\n  \\\\\\"name\\\\\\": \\\\\\"test\\\\\\"\\\\n}\\", \\"length\\": 22}"
-      }
-    ]
-  }
-}
-\`\`\`
-
-## OpenAPI Specification
-
-Full OpenAPI 3.1 specification available at:
-${BASE_URL}/api/docs
-
-## Data Types
-
-### JsonNode
-\`\`\`typescript
-interface JsonNode {
-  id: string
-  key: string
-  value: unknown
-  type: 'string' | 'number' | 'boolean' | 'null' | 'object' | 'array'
-  path: string[]
-  depth: number
-  children?: JsonNode[]
-}
-\`\`\`
-
-### TreeStats
-\`\`\`typescript
-interface TreeStats {
-  totalNodes: number
-  maxDepth: number
-  stringCount: number
-  numberCount: number
-  booleanCount: number
-  nullCount: number
-  objectCount: number
-  arrayCount: number
-}
-\`\`\`
-
-## Error Handling
-
-All API errors return a consistent format:
-\`\`\`json
-{
-  "success": false,
-  "error": "Error message",
-  "meta": {
-    "timestamp": "2024-01-01T00:00:00.000Z",
-    "requestId": "uuid",
-    "version": "1.0.0"
-  }
-}
-\`\`\`
-
-HTTP Status Codes:
-- 200: Success
-- 400: Bad Request (invalid JSON)
-- 429: Rate Limit Exceeded
-- 500: Internal Server Error
-
-## Rate Limiting
-
-- Limit: 100 requests per minute per IP
-- Headers returned:
-  - X-RateLimit-Remaining
-  - X-RateLimit-Reset
-
-## Links
-
-- Website: ${BASE_URL}
-- API Docs: ${BASE_URL}/api/docs
-- MCP Server: ${BASE_URL}/api/mcp
-- Health Check: ${BASE_URL}/api/health
-- RSS Feed: ${BASE_URL}/feed.xml
-- Sitemap: ${BASE_URL}/sitemap.xml
-
-## Support
-
-Built by Platphorm News
-Website: https://platphormnews.com
-Email: support@platphormnews.com
+This site acts as the canonical registry for these tools.
 `
 
   return new NextResponse(content, {

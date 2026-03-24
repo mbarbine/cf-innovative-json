@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platphormnews.com/schemas/document.schema.json",
+  "title": "Document",
+  "description": "A Document Realm Item",
+  "allOf": [
+    {
+      "$ref": "#/$defs/baseItem"
+    },
+    {
+      "type": "object",
+      "required": [
+        "type",
+        "slug"
+      ],
+      "properties": {
+        "type": {
+          "const": "document"
+        },
+        "slug": {
+          "$ref": "#/$defs/slug"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/url"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "content_type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "version_label": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "author": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "published_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "updated_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/timestamp"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

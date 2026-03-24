@@ -1,0 +1,614 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platphormnews.com/schemas/observability.schema.json",
+  "title": "Observability Types",
+  "description": "Traces, events, and observations",
+  "$defs": {
+    "trace": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/baseItem"
+        },
+        {
+          "type": "object",
+          "required": [
+            "type",
+            "status"
+          ],
+          "properties": {
+            "type": {
+              "const": "trace"
+            },
+            "root_request_id": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "default": null
+            },
+            "root_event_id": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/idInteger"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "started_at": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/timestamp"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "completed_at": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/timestamp"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "duration_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "minimum": 0,
+              "default": null
+            },
+            "agent_run_ids": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/idInteger"
+              },
+              "default": []
+            },
+            "event_ids": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/idInteger"
+              },
+              "default": []
+            },
+            "observation_ids": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/idInteger"
+              },
+              "default": []
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "event": {
+      "type": "object",
+      "required": [
+        "id",
+        "event_type",
+        "time"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "universe_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "realm_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "event_type": {
+          "type": "string",
+          "minLength": 1
+        },
+        "severity": {
+          "type": "string",
+          "default": "info"
+        },
+        "status": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "trace_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "correlation_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "request_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "actor_type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "actor_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "target_type": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "target_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "payload": {
+          "type": "object",
+          "default": {}
+        },
+        "time": {
+          "$ref": "#/$defs/timestamp"
+        }
+      },
+      "additionalProperties": false
+    },
+    "observation": {
+      "type": "object",
+      "required": [
+        "id",
+        "subject_type",
+        "subject_id",
+        "metric_name",
+        "observed_at"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "universe_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "realm_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "subject_type": {
+          "type": "string"
+        },
+        "subject_id": {
+          "type": "string"
+        },
+        "metric_name": {
+          "type": "string"
+        },
+        "metric_value": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "default": null
+        },
+        "metric_text": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "metric_unit": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "confidence": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "default": null
+        },
+        "trace_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "observed_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "metadata": {
+          "type": "object",
+          "default": {}
+        }
+      },
+      "additionalProperties": false
+    },
+    "requestObservation": {
+      "type": "object",
+      "required": [
+        "id",
+        "request_id",
+        "observed_at"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "universe_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "realm_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "request_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trace_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "correlation_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "fingerprint_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "method": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "host": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "edge_region": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "runtime": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "latency_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "default": null
+        },
+        "status_code": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 100,
+          "maximum": 599,
+          "default": null
+        },
+        "cache_status": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "bot_score": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "default": null
+        },
+        "trust_score": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "default": null
+        },
+        "observed_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "metadata": {
+          "type": "object",
+          "default": {}
+        }
+      },
+      "additionalProperties": false
+    },
+    "edgeTrace": {
+      "type": "object",
+      "required": [
+        "id",
+        "request_id",
+        "time"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "request_id": {
+          "type": "string"
+        },
+        "trace_id": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "edge_node": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "route_signature": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "digest": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "source_ip_classification": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "destination_service": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "policy_decision": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "firewall_action": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "time": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "metadata": {
+          "type": "object",
+          "default": {}
+        }
+      },
+      "additionalProperties": false
+    },
+    "fingerprint": {
+      "type": "object",
+      "required": [
+        "id",
+        "fingerprint_type",
+        "fingerprint_value",
+        "first_seen_at",
+        "last_seen_at"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "realm_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "fingerprint_type": {
+          "type": "string",
+          "enum": [
+            "ja4",
+            "ja4h",
+            "ja4s",
+            "ua_hash",
+            "route_digest",
+            "vercel_digest",
+            "tool_signature",
+            "agent_signature"
+          ]
+        },
+        "fingerprint_value": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normalized_value": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "classification": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "confidence": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "default": null
+        },
+        "trust_score": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "default": null
+        },
+        "first_seen_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "last_seen_at": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "metadata": {
+          "type": "object",
+          "default": {}
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

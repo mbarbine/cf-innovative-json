@@ -1,21 +1,35 @@
 import { NextResponse } from 'next/server'
-import { apiResponse, corsHeaders, APP_VERSION } from '@/lib/api-utils'
-
-const startTime = Date.now()
+import { corsHeaders } from '@/lib/api-utils'
 
 export async function GET() {
-  const uptime = Math.floor((Date.now() - startTime) / 1000)
-  
-  return apiResponse(
-    {
-      status: 'healthy',
-      version: APP_VERSION,
-      uptime,
-      timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV,
+  const healthData = {
+    status: 'active',
+    version: '1.0.0',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    realm: {
+      id: 1,
+      slug: 'platphorm-schema-registry',
+      environment: 'production',
+      trust_level: 'standard'
     },
-    200
-  )
+    capabilities: {
+      api: true,
+      mcp: true,
+      health: true,
+      llms: true,
+      sitemap: true,
+      robots: true
+    }
+  }
+
+  return NextResponse.json(healthData, {
+    headers: {
+      ...corsHeaders(),
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-store, max-age=0',
+    },
+  })
 }
 
 export async function OPTIONS() {

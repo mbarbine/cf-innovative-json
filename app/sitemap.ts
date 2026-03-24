@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://docs.platphormnews.com'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -11,13 +11,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1,
     },
     {
-      url: `${BASE_URL}/docs`,
+      url: `${BASE_URL}/api/docs`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.9,
     },
     {
-      url: `${BASE_URL}/api/docs`,
+      url: `${BASE_URL}/.well-known/platphorm.json`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/api/mcp`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/api/health`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
       priority: 0.8,
@@ -41,22 +53,40 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.7,
     },
     {
-      url: `${BASE_URL}/.well-known/llms.txt`,
+      url: `${BASE_URL}/schemas/json/platphorm-universal-schema-pack.json`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.9,
     },
     {
-      url: `${BASE_URL}/.well-known/llms-full.txt`,
+      url: `${BASE_URL}/schemas/json/core.schema.json`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.8,
     },
     {
-      url: `${BASE_URL}/.well-known/llms-index.json`,
+      url: `${BASE_URL}/schemas/json/realm.schema.json`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
-      priority: 0.6,
+      priority: 0.8,
     },
+    {
+      url: `${BASE_URL}/schemas/json/item.schema.json`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/schemas/json/observability.schema.json`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/schemas/json/agent.schema.json`,
+      lastModified: new Date(),
+      changeFrequency: 'monthly',
+      priority: 0.8,
+    }
   ]
 }

@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platphormnews.com/schemas/podcast.schema.json",
+  "title": "Podcast",
+  "description": "A Podcast Realm Item",
+  "allOf": [
+    {
+      "$ref": "#/$defs/baseItem"
+    },
+    {
+      "type": "object",
+      "required": [
+        "type",
+        "slug",
+        "feed_id",
+        "feed_url",
+        "episode_count",
+        "aliases"
+      ],
+      "properties": {
+        "type": {
+          "const": "podcast"
+        },
+        "slug": {
+          "$ref": "#/$defs/slug"
+        },
+        "feed_id": {
+          "$ref": "#/$defs/idInteger"
+        },
+        "feed_url": {
+          "$ref": "#/$defs/url"
+        },
+        "site_url": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/url"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "image": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "language": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "categories": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
+        "episode_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "last_episode_id": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/idInteger"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "aliases": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        }
+      },
+      "additionalProperties": false
+    }
+  ]
+}

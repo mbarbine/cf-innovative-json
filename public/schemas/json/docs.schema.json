@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platphormnews.com/schemas/docs.schema.json",
+  "title": "Docs Profile",
+  "description": "Specific overlay for Docs platform",
+  "type": "object",
+  "properties": {
+    "realm_type": {
+      "const": "documentation-platform"
+    }
+  }
+}

@@ -1,0 +1,233 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platphormnews.com/schemas/item.schema.json",
+  "title": "Base Item",
+  "description": "A Base PlatPhorm Item",
+  "type": "object",
+  "required": [
+    "id",
+    "public_id",
+    "fqid",
+    "graph_uri",
+    "type",
+    "universe_id",
+    "realm_id",
+    "namespace_id",
+    "time",
+    "canonical_url",
+    "environment",
+    "visibility",
+    "status",
+    "feature_tags",
+    "environment_tags",
+    "governance_tags",
+    "dead",
+    "deleted",
+    "metadata"
+  ],
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/idInteger"
+    },
+    "public_id": {
+      "type": "string",
+      "pattern": "^[a-z]+_[0-9]+$"
+    },
+    "fqid": {
+      "$ref": "#/$defs/fqid"
+    },
+    "graph_uri": {
+      "$ref": "#/$defs/graphUri"
+    },
+    "type": {
+      "type": "string"
+    },
+    "title": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "description": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "universe_id": {
+      "$ref": "#/$defs/idInteger"
+    },
+    "realm_id": {
+      "$ref": "#/$defs/idInteger"
+    },
+    "namespace_id": {
+      "$ref": "#/$defs/idInteger"
+    },
+    "time": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "observed_at": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/timestamp"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "canonical_url": {
+      "$ref": "#/$defs/url"
+    },
+    "environment": {
+      "type": "string",
+      "enum": [
+        "production",
+        "staging",
+        "development",
+        "preview",
+        "sandbox",
+        "internal",
+        "partner",
+        "customer"
+      ],
+      "default": "production"
+    },
+    "visibility": {
+      "type": "string",
+      "enum": [
+        "public",
+        "private",
+        "unlisted",
+        "network-internal",
+        "agent-only",
+        "partner-shared",
+        "customer-isolated"
+      ],
+      "default": "public"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "draft",
+        "queued",
+        "running",
+        "succeeded",
+        "failed",
+        "archived",
+        "deleted"
+      ],
+      "default": "active"
+    },
+    "feature_tags": {
+      "$ref": "#/$defs/tags"
+    },
+    "environment_tags": {
+      "$ref": "#/$defs/tags"
+    },
+    "governance_tags": {
+      "$ref": "#/$defs/tags"
+    },
+    "trace_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "correlation_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "request_id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "fingerprint_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/idInteger"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "source_event_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/idInteger"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "ingest_job_id": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/idInteger"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "parser_version": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "schema_version": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "provenance_status": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "default": null
+    },
+    "score": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "default": null
+    },
+    "dead": {
+      "type": "boolean",
+      "default": false
+    },
+    "deleted": {
+      "type": "boolean",
+      "default": false
+    },
+    "metadata": {
+      "type": "object",
+      "default": {}
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,37 +1,14 @@
-import type { OpenApiSpec } from './types'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://docs.platphormnews.com'
 
-export const openApiSpec: OpenApiSpec = {
+export const openApiSpec = {
   openapi: '3.1.0',
   info: {
-    title: 'JSON Tree API',
-    description: `
-# JSON Tree API
-
-A comprehensive REST API for JSON parsing, validation, formatting, and visualization.
-
-## Features
-
-- **Parse** - Convert JSON strings to tree structures with statistics
-- **Format** - Pretty-print JSON with customizable indentation  
-- **Minify** - Compress JSON by removing whitespace
-- **Validate** - Check if a string is valid JSON
-- **Diff** - Compare two JSON objects and find differences
-- **Query** - Extract values using JSONPath expressions
-
-## Rate Limiting
-
-API requests are limited to 100 requests per minute per IP address.
-
-## MCP Server
-
-This API also supports the Model Context Protocol (MCP) for AI agent integration.
-See \`/api/mcp\` for MCP server endpoints.
-    `.trim(),
+    title: 'PlatPhorm Schema Registry API',
+    description: 'The API reference for the PlatPhorm Universal Schema Pack contracts',
     version: '1.0.0',
     contact: {
-      name: 'JSON Tree Support',
-      url: 'https://json-tree.vercel.app',
-      email: 'support@json-tree.vercel.app',
+      name: 'PlatPhorm Team',
+      url: BASE_URL,
     },
     license: {
       name: 'MIT',
@@ -40,12 +17,12 @@ See \`/api/mcp\` for MCP server endpoints.
   },
   servers: [
     {
-      url: process.env.NEXT_PUBLIC_APP_URL || 'https://json-tree.vercel.app',
-      description: 'Production server',
+      url: BASE_URL,
+      description: 'Production Server',
     },
     {
       url: 'http://localhost:3000',
-      description: 'Development server',
+      description: 'Development Server',
     },
   ],
   paths: {
@@ -53,25 +30,20 @@ See \`/api/mcp\` for MCP server endpoints.
       get: {
         operationId: 'getHealth',
         summary: 'Health Check',
-        description: 'Check if the API is running and healthy',
+        description: 'Check realm health and capability exposure',
         tags: ['System'],
         responses: {
           '200': {
-            description: 'API is healthy',
+            description: 'Realm is healthy',
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
                   properties: {
-                    success: { type: 'boolean', example: true },
-                    data: {
-                      type: 'object',
-                      properties: {
-                        status: { type: 'string', example: 'healthy' },
-                        version: { type: 'string', example: '1.0.0' },
-                        uptime: { type: 'number', example: 12345 },
-                      },
-                    },
+                    status: { type: 'string', example: 'active' },
+                    version: { type: 'string', example: '1.0.0' },
+                    timestamp: { type: 'string' },
+                    uptime: { type: 'number', example: 12345 },
                   },
                 },
               },
@@ -80,309 +52,130 @@ See \`/api/mcp\` for MCP server endpoints.
         },
       },
     },
-    '/api/v1/parse': {
-      post: {
-        operationId: 'parseJson',
-        summary: 'Parse JSON to Tree',
-        description: 'Parse a JSON string into a tree structure with statistics',
-        tags: ['JSON Operations'],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['json'],
-                properties: {
-                  json: {
-                    type: 'string',
-                    description: 'JSON string to parse',
-                    example: '{"name": "test", "items": [1, 2, 3]}',
-                  },
-                  options: {
-                    type: 'object',
-                    properties: {
-                      maxDepth: {
-                        type: 'integer',
-                        description: 'Maximum depth to parse',
-                        default: 100,
-                      },
-                      includeStats: {
-                        type: 'boolean',
-                        description: 'Include statistics in response',
-                        default: true,
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
+    '/.well-known/platphorm.json': {
+      get: {
+        operationId: 'getManifest',
+        summary: 'Realm Manifest',
+        description: 'Discover the realm profile and capabilities',
+        tags: ['Discovery'],
         responses: {
           '200': {
-            description: 'Successfully parsed JSON',
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/ParseResponse',
-                },
-              },
-            },
-          },
-          '400': {
-            description: 'Invalid JSON',
-            content: {
-              'application/json': {
-                schema: {
-                  $ref: '#/components/schemas/ErrorResponse',
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    '/api/v1/format': {
-      post: {
-        operationId: 'formatJson',
-        summary: 'Format JSON',
-        description: 'Pretty-print JSON with customizable indentation',
-        tags: ['JSON Operations'],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['json'],
-                properties: {
-                  json: {
-                    type: 'string',
-                    description: 'JSON string to format',
-                  },
-                  indent: {
-                    type: 'integer',
-                    description: 'Number of spaces for indentation',
-                    default: 2,
-                    minimum: 0,
-                    maximum: 8,
-                  },
-                },
-              },
-            },
-          },
-        },
-        responses: {
-          '200': {
-            description: 'Successfully formatted JSON',
+            description: 'Realm Manifest Data',
             content: {
               'application/json': {
                 schema: {
                   type: 'object',
                   properties: {
-                    success: { type: 'boolean' },
-                    data: {
+                    realm: {
                       type: 'object',
                       properties: {
-                        formatted: { type: 'string' },
-                        length: { type: 'integer' },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+                        slug: { type: 'string' },
+                        realm_type: { type: 'string' }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     },
-    '/api/v1/minify': {
-      post: {
-        operationId: 'minifyJson',
-        summary: 'Minify JSON',
-        description: 'Remove all whitespace from JSON',
-        tags: ['JSON Operations'],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['json'],
-                properties: {
-                  json: {
-                    type: 'string',
-                    description: 'JSON string to minify',
-                  },
-                },
-              },
-            },
-          },
-        },
+    '/api/mcp': {
+      get: {
+        operationId: 'getMcpInfo',
+        summary: 'MCP Server Information',
+        description: 'Discovery route for MCP capabilities',
+        tags: ['Agents'],
         responses: {
           '200': {
-            description: 'Successfully minified JSON',
-          },
-        },
+            description: 'MCP Server Capabilities'
+          }
+        }
       },
-    },
-    '/api/v1/validate': {
       post: {
-        operationId: 'validateJson',
-        summary: 'Validate JSON',
-        description: 'Check if a string is valid JSON',
-        tags: ['JSON Operations'],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['json'],
-                properties: {
-                  json: {
-                    type: 'string',
-                    description: 'JSON string to validate',
-                  },
-                },
-              },
-            },
-          },
-        },
+        operationId: 'mcpCall',
+        summary: 'Execute MCP JSON-RPC',
+        description: 'Execute MCP methods (e.g. tools/call, tools/list)',
+        tags: ['Agents'],
         responses: {
           '200': {
-            description: 'Validation result',
-            content: {
-              'application/json': {
-                schema: {
-                  type: 'object',
-                  properties: {
-                    success: { type: 'boolean' },
-                    data: {
-                      type: 'object',
-                      properties: {
-                        valid: { type: 'boolean' },
-                        error: { type: 'string' },
-                      },
-                    },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
+            description: 'MCP Response'
+          }
+        }
+      }
     },
-    '/api/v1/diff': {
-      post: {
-        operationId: 'diffJson',
-        summary: 'Diff JSON',
-        description: 'Compare two JSON objects and find differences',
-        tags: ['JSON Operations'],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['source', 'target'],
-                properties: {
-                  source: {
-                    type: 'string',
-                    description: 'Source JSON string',
-                  },
-                  target: {
-                    type: 'string',
-                    description: 'Target JSON string',
-                  },
-                },
-              },
-            },
-          },
-        },
-        responses: {
-          '200': {
-            description: 'Diff result',
-          },
-        },
-      },
+    '/v0/universes': {
+      get: {
+        operationId: 'listUniverses',
+        summary: 'List Universes',
+        description: 'Retrieve all universes in the network',
+        tags: ['Network'],
+        responses: { '200': { description: 'Success' } }
+      }
     },
+    '/v0/realms': {
+      get: {
+        operationId: 'listRealms',
+        summary: 'List Realms',
+        description: 'Retrieve all realms in the network',
+        tags: ['Network'],
+        responses: { '200': { description: 'Success' } }
+      }
+    },
+    '/v0/realm/{id}/items': {
+      get: {
+        operationId: 'listRealmItems',
+        summary: 'List Realm Items',
+        description: 'Get all baseItems and typed extensions within a realm',
+        tags: ['Content'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        responses: { '200': { description: 'Success' } }
+      }
+    },
+    '/v0/item/{id}': {
+      get: {
+        operationId: 'getItem',
+        summary: 'Get Item',
+        description: 'Retrieve a specific baseItem by FQID',
+        tags: ['Content'],
+        parameters: [
+          {
+            name: 'id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        responses: { '200': { description: 'Success' } }
+      }
+    },
+    '/v0/search': {
+      get: {
+        operationId: 'searchItems',
+        summary: 'Search Network',
+        description: 'Semantic or full-text search across items',
+        tags: ['Content'],
+        parameters: [
+          {
+            name: 'q',
+            in: 'query',
+            required: true,
+            schema: { type: 'string' }
+          }
+        ],
+        responses: { '200': { description: 'Success' } }
+      }
+    }
   },
   components: {
-    schemas: {
-      ParseResponse: {
-        type: 'object',
-        properties: {
-          success: { type: 'boolean' },
-          data: {
-            type: 'object',
-            properties: {
-              tree: { $ref: '#/components/schemas/JsonNode' },
-              stats: { $ref: '#/components/schemas/TreeStats' },
-              valid: { type: 'boolean' },
-            },
-          },
-          meta: { $ref: '#/components/schemas/ResponseMeta' },
-        },
-      },
-      JsonNode: {
-        type: 'object',
-        properties: {
-          id: { type: 'string' },
-          key: { type: 'string' },
-          value: {},
-          type: {
-            type: 'string',
-            enum: ['string', 'number', 'boolean', 'null', 'object', 'array'],
-          },
-          path: {
-            type: 'array',
-            items: { type: 'string' },
-          },
-          depth: { type: 'integer' },
-          children: {
-            type: 'array',
-            items: { $ref: '#/components/schemas/JsonNode' },
-          },
-        },
-      },
-      TreeStats: {
-        type: 'object',
-        properties: {
-          totalNodes: { type: 'integer' },
-          maxDepth: { type: 'integer' },
-          stringCount: { type: 'integer' },
-          numberCount: { type: 'integer' },
-          booleanCount: { type: 'integer' },
-          nullCount: { type: 'integer' },
-          objectCount: { type: 'integer' },
-          arrayCount: { type: 'integer' },
-        },
-      },
-      ResponseMeta: {
-        type: 'object',
-        properties: {
-          timestamp: { type: 'string', format: 'date-time' },
-          requestId: { type: 'string', format: 'uuid' },
-          version: { type: 'string' },
-        },
-      },
-      ErrorResponse: {
-        type: 'object',
-        properties: {
-          success: { type: 'boolean', example: false },
-          error: { type: 'string' },
-          meta: { $ref: '#/components/schemas/ResponseMeta' },
-        },
-      },
-    },
-    securitySchemes: {
-      bearerAuth: {
-        type: 'http',
-        scheme: 'bearer',
-        description: 'Optional API key for increased rate limits',
-      },
-    },
-  },
+    schemas: {}
+  }
 }
