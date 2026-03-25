@@ -22,7 +22,7 @@ export function Header() {
   }, [])
 
   return (
-    <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-background">
+    <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-background flex-wrap gap-3">
       <div className="flex items-center gap-3">
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
           <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center">
