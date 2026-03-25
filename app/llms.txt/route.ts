@@ -40,6 +40,8 @@ The network supports the v0 standard endpoints:
 ### System Endpoints
 - GET /api/health
 - GET /api/docs (OpenAPI 3.1)
+- GET /faq
+- GET https://platphormnews.com/api/network/graph
 - GET /.well-known/platphorm.json
 
 ## MCP Server

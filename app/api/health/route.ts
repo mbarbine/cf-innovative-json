@@ -7,6 +7,8 @@ export async function GET() {
     version: '1.0.0',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
+    memory: process.memoryUsage(),
+    nodeVersion: process.version,
     realm: {
       id: 1,
       slug: 'platphorm-schema-registry',

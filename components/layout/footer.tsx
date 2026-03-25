@@ -8,8 +8,8 @@ export function Footer() {
   const currentYear = new Date().getFullYear()
 
   return (
-    <footer className="flex items-center justify-between px-4 py-2 border-t border-border bg-muted/30 text-xs text-muted-foreground">
-      <div className="flex items-center gap-4">
+    <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-4 sm:py-2 border-t border-border bg-muted/30 text-xs text-muted-foreground">
+      <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-start">
         <span>&copy; {currentYear} <a href="https://platphormnews.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">Platphorm News</a></span>
         <Link href="/docs" className="hover:text-foreground transition-colors">
           API Docs
@@ -23,6 +23,16 @@ export function Footer() {
         <Link href="/llms.txt" className="hover:text-foreground transition-colors">
           LLMs
         </Link>
+        <span className="text-muted-foreground mx-1">|</span>
+        <a href="https://platphormnews.com/api/network/graph" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+          Network Graph
+        </a>
+        <a href="https://platphormnews.com/api/docs" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+          Network API
+        </a>
+        <a href="https://mcp.platphormnews.com" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">
+          Network MCP
+        </a>
       </div>
       <div className="flex items-center gap-3">
         <span className="text-muted-foreground/70">json.platphormnews.com</span>
