@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import { corsHeaders } from '@/lib/api-utils'
 
-const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://docs.platphormnews.com'
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'
 
 export async function GET() {
   const content = `User-agent: *
