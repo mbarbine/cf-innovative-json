@@ -1,12 +1,7 @@
-'use client'
-
 import Link from 'next/link'
-
-const APP_VERSION = '0.0.1'
+import { FileJson2, ExternalLink } from 'lucide-react'
 
 export function Footer() {
-  const currentYear = new Date().getFullYear()
-
   return (
     <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-4 sm:py-2 border-t border-border bg-muted/30 text-xs text-muted-foreground">
       <div className="flex items-center gap-4 flex-wrap justify-center sm:justify-start">
