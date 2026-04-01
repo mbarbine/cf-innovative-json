@@ -9,7 +9,8 @@ import {
   QrCode,
   Download,
   Twitter,
-  Linkedin
+  Linkedin,
+  Loader2
 } from 'lucide-react'
 import {
   Dialog,
@@ -113,7 +114,7 @@ export function ShareDialog({ json, viewMode, isValid }: ShareDialogProps) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="ghost" size="icon" disabled={!isValid}>
+        <Button variant="ghost" size="icon" disabled={!isValid} aria-label="Share JSON">
           <Share2 className="w-4 h-4" />
         </Button>
       </DialogTrigger>
@@ -140,7 +141,7 @@ export function ShareDialog({ json, viewMode, isValid }: ShareDialogProps) {
                   readOnly
                   className="font-mono text-xs"
                 />
-                <Button onClick={handleCopyLink} disabled={!isValid}>
+                <Button size="icon" aria-label="Copy share link" onClick={handleCopyLink} disabled={!isValid}>
                   {copied ? (
                     <Check className="w-4 h-4 text-emerald-500" />
                   ) : (
@@ -189,11 +190,13 @@ export function ShareDialog({ json, viewMode, isValid }: ShareDialogProps) {
                   className="font-mono text-xs"
                 />
                 <Button 
+                  size="icon"
+                  aria-label="Import JSON from URL"
                   onClick={handleImportFromUrl}
                   disabled={importing || !importUrl.trim()}
                 >
                   {importing ? (
-                    <span className="animate-spin">...</span>
+                    <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Link2 className="w-4 h-4" />
                   )}
