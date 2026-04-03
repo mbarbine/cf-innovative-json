@@ -239,16 +239,26 @@ export function Toolbar({
             placeholder="Search keys or values..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-16"
+            className={cn("pl-9", searchQuery ? "pr-24" : "pr-9")}
             aria-label="Search JSON"
           />
           {searchQuery && (
-            <span
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground"
-              aria-live="polite"
-            >
-              {searchResultCount} found
-            </span>
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+              <span
+                className="text-xs text-muted-foreground"
+                aria-live="polite"
+              >
+                {searchResultCount} found
+              </span>
+              <button
+                type="button"
+                onClick={() => setSearchQuery('')}
+                className="text-muted-foreground hover:text-foreground rounded-full p-0.5 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                aria-label="Clear search"
+              >
+                <X className="w-3.5 h-3.5" aria-hidden="true" />
+              </button>
+            </div>
           )}
         </div>
 
