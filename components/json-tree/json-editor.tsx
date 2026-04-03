@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useRef, useEffect } from 'react'
+import { useCallback, useRef, useEffect, useMemo } from 'react'
 import { cn } from '@/lib/utils'
 
 interface JsonEditorProps {
@@ -15,7 +15,15 @@ export function JsonEditor({ value, onChange, isValid, error, className }: JsonE
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const lineNumbersRef = useRef<HTMLDivElement>(null)
 
-  const lineCount = value.split('\n').length
+  // Optimize line counting to prevent memory allocation for large JSON strings
+  const lineCount = useMemo(() => {
+    let count = 1
+    let pos = -1
+    while ((pos = value.indexOf('\n', pos + 1)) !== -1) {
+      count++
+    }
+    return count
+  }, [value])
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onChange(e.target.value)
