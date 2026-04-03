@@ -21,7 +21,7 @@ import {
   Download,
   Upload,
   ArrowLeftRight,
-  X
+  Loader2
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
@@ -388,7 +388,7 @@ export function Toolbar({
                         className="font-mono text-xs h-9"
                         aria-label="Share URL"
                       />
-                      <Button size="sm" onClick={handleShareLink} disabled={!isValid} aria-label="Copy Share URL">
+                      <Button size="icon" className="w-9 h-9 flex-shrink-0" onClick={handleShareLink} disabled={!isValid} aria-label="Copy Share URL">
                         {shareCopied ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                       </Button>
                     </div>
@@ -406,8 +406,8 @@ export function Toolbar({
                         className="font-mono text-xs h-9"
                         aria-label="Import URL"
                       />
-                      <Button size="sm" onClick={handleImportFromUrl} disabled={importing || !importUrl.trim()} aria-label="Import Data">
-                        {importing ? '...' : <Download className="w-4 h-4" />}
+                      <Button size="icon" className="w-9 h-9 flex-shrink-0" onClick={handleImportFromUrl} disabled={importing || !importUrl.trim()} aria-label="Import Data">
+                        {importing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
                       </Button>
                     </div>
                     {importError && <p className="text-xs text-destructive" role="alert">{importError}</p>}

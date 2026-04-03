@@ -1,3 +1,3 @@
-## 2024-05-24 - Add accessible clear button to search inputs
-**Learning:** Adding a clear button to search inputs significantly improves UX by saving users from manually backspacing long queries. Proper placement alongside result counters and ensuring screen reader accessibility (`aria-label="Clear search"`) is essential for a polished interaction.
-**Action:** Consistently add clear buttons with `aria-label` to search or filter inputs that can accumulate long strings of text.
+## 2024-05-18 - Improve icon-only buttons accessibility and async visual feedback
+**Learning:** Found that some icon-only buttons (like those in the ShareDialog) lacked `aria-label` attributes for screen readers, and some were missing the `size="icon"` property which ensures proper sizing for icon-only buttons in the UI component library. Also, replacing text-based loading states (like "...") with visual spinners (like `Loader2` with `animate-spin`) provides much clearer async feedback for users.
+**Action:** Always ensure icon-only buttons have an `aria-label` and `size="icon"` (if using the standard Button component). Use spinning icons for async operations instead of text.
