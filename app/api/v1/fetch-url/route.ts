@@ -25,6 +25,38 @@ export async function POST(request: NextRequest) {
       return apiError('Only HTTP and HTTPS URLs are supported', 400, requestId)
     }
     
+    // SSRF Protection: Block local, loopback, and private IP addresses
+    const hostname = parsedUrl.hostname.toLowerCase()
+
+    // Check for localhost/loopback
+    if (
+      hostname === 'localhost' ||
+      hostname.endsWith('.localhost') ||
+      hostname === '127.0.0.1' ||
+      hostname === '[::1]' ||
+      hostname === '0.0.0.0' ||
+      hostname === '[::]'
+    ) {
+      return apiError('Access to local network resources is forbidden', 403, requestId)
+    }
+
+    // Check for private IP addresses (IPv4)
+    const isPrivateIP = (ip: string) => {
+      const parts = ip.split('.').map(p => parseInt(p, 10))
+      if (parts.length !== 4 || parts.some(isNaN)) return false
+
+      return (
+        parts[0] === 10 || // 10.0.0.0/8
+        (parts[0] === 172 && parts[1] >= 16 && parts[1] <= 31) || // 172.16.0.0/12
+        (parts[0] === 192 && parts[1] === 168) || // 192.168.0.0/16
+        (parts[0] === 169 && parts[1] === 254) // 169.254.0.0/16 (Link-local)
+      )
+    }
+
+    if (isPrivateIP(hostname)) {
+      return apiError('Access to private network resources is forbidden', 403, requestId)
+    }
+
     // Fetch the JSON from the URL
     const response = await fetch(url, {
       headers: {
