@@ -25,20 +25,97 @@ export async function POST(request: NextRequest) {
       return apiError('Only HTTP and HTTPS URLs are supported', 400, requestId)
     }
     
-    // Fetch the JSON from the URL
-    const response = await fetch(url, {
-      headers: {
-        'Accept': 'application/json, text/plain, */*',
-        'User-Agent': 'JSON-Tree/1.0'
-      },
-      signal: AbortSignal.timeout(10000) // 10 second timeout
-    })
-    
-    if (!response.ok) {
+    // 🛡️ SECURITY: Prevent SSRF (including DNS rebinding) using a custom lookup function
+    // that enforces safe IP resolution right when the socket connects.
+    const dns = require('dns');
+    const http = require('http');
+    const https = require('https');
+
+    const safeLookup = (hostname: string, options: any, callback: any) => {
+      dns.lookup(hostname, options, (err, address, family) => {
+        if (err) return callback(err);
+
+        // Explicitly block 127.0.0.1, ::1, 0.0.0.0 and known private IP ranges
+        const addrStr = String(address);
+        const isLocalhost = addrStr === '127.0.0.1' || addrStr === '::1' || addrStr === '0.0.0.0' || addrStr.startsWith('::ffff:127.');
+        const isPrivateIP = /^10\./.test(addrStr) ||
+                            /^192\.168\./.test(addrStr) ||
+                            /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(addrStr) ||
+                            addrStr.startsWith('fd') || addrStr.startsWith('fc');
+        const isMetadataIP = addrStr === '169.254.169.254';
+
+        if (isLocalhost || isPrivateIP || isMetadataIP) {
+          // Instead of returning an error to the callback, reject via custom error code
+          const err = new Error('Access to local or private networks is restricted (SSRF Protection)');
+          (err as any).code = 'ERR_SSRF_RESTRICTED';
+          return callback(err);
+        }
+
+        // Return the address to let the socket connect to the safe IP.
+        // It's essential we return the resolved `address` here to avoid a secondary resolution
+        callback(null, address, family);
+      });
+    };
+
+    const fetchJsonSafe = () => {
+      return new Promise<{ text: string, status: number, statusText: string, contentType: string | null }>((resolve, reject) => {
+        // We use require() because fetch() is vulnerable to DNS rebinding (TOCTOU).
+        // By providing a custom `lookup` function to node's native HTTP client,
+        // we evaluate the IP address right when the socket connects.
+        const client = parsedUrl.protocol === 'https:' ? require('https') : require('http');
+        const options = {
+          lookup: safeLookup,
+          headers: {
+            'Accept': 'application/json, text/plain, */*',
+            'User-Agent': 'JSON-Tree/1.0'
+          },
+          timeout: 10000
+        };
+        const req = client.get(url, options, (res: any) => {
+          let data = '';
+          res.on('data', (chunk: any) => data += chunk);
+          res.on('end', () => resolve({
+            text: data,
+            status: res.statusCode || 200,
+            statusText: res.statusMessage || '',
+            contentType: res.headers['content-type'] || null
+          }));
+        });
+
+        req.on('timeout', () => {
+          req.destroy();
+          reject(new Error('TimeoutError'));
+        });
+
+        req.on('error', (err: any) => {
+           // Handle immediate error emission before request starts (e.g. from mock)
+           reject(err);
+        });
+      });
+    };
+
+    let response;
+    try {
+      response = await fetchJsonSafe();
+    } catch (err) {
+      if ((err as Error).message === 'TimeoutError') {
+        throw err;
+      }
+      if (
+        (err as any).code === 'ERR_SSRF_RESTRICTED' ||
+        (err as Error).message.includes('SSRF Protection') ||
+        ((err as any).cause && (err as any).cause.message && (err as any).cause.message.includes('SSRF Protection'))
+      ) {
+        return apiError('Access to local or private networks is restricted (SSRF Protection)', 403, requestId);
+      }
+      return apiError(`Failed to fetch URL: ${(err as Error).message}`, 400, requestId);
+    }
+
+    if (response.status < 200 || response.status >= 300) {
       return apiError(`Failed to fetch URL: ${response.status} ${response.statusText}`, 502, requestId)
     }
-    
-    const text = await response.text()
+
+    const text = response.text;
     
     // Validate it's valid JSON
     try {

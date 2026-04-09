@@ -173,6 +173,35 @@ export const openApiSpec = {
         ],
         responses: { '200': { description: 'Success' } }
       }
+    },
+    '/api/v1/fetch-url': {
+      post: {
+        operationId: 'fetchUrl',
+        summary: 'Fetch URL',
+        description: 'Fetches the JSON content from the provided URL. Note: Includes Server-Side Request Forgery (SSRF) protection. Requests to localhost, private IP ranges (e.g., 10.x.x.x, 192.168.x.x), and metadata endpoints (169.254.169.254) are explicitly blocked.',
+        tags: ['Utility'],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                properties: {
+                  url: { type: 'string', example: 'https://jsonplaceholder.typicode.com/todos/1' }
+                },
+                required: ['url']
+              }
+            }
+          }
+        },
+        responses: {
+          '200': { description: 'Success' },
+          '400': { description: 'Invalid request or URL format' },
+          '403': { description: 'Access to local or private networks is restricted (SSRF Protection)' },
+          '422': { description: 'URL does not return valid JSON' },
+          '500': { description: 'Server error during fetch' }
+        }
+      }
     }
   },
   components: {
