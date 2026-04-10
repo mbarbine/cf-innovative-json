@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server'
-import { apiResponse, apiError, generateRequestId } from '@/lib/api-utils'
+import { apiResponse, apiError, generateRequestId, isSafeUrl } from '@/lib/api-utils'
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId()
@@ -23,6 +23,11 @@ export async function POST(request: NextRequest) {
     // Only allow http/https protocols
     if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
       return apiError('Only HTTP and HTTPS URLs are supported', 400, requestId)
+    }
+
+    // SSRF Protection: Ensure URL does not point to internal/private networks
+    if (!isSafeUrl(url)) {
+      return apiError('The provided URL is not allowed', 400, requestId)
     }
     
     // Fetch the JSON from the URL
