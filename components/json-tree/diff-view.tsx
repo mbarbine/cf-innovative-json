@@ -95,7 +95,7 @@ export const DiffView = memo(function DiffView({
             <ArrowLeftRight className="w-4 h-4" />
             JSON Diff
           </h3>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close diff view">
             <X className="w-4 h-4" />
           </Button>
         </div>
@@ -131,7 +131,7 @@ export const DiffView = memo(function DiffView({
             </Badge>
           </div>
         </div>
-        <Button variant="ghost" size="icon" onClick={onClose}>
+        <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close diff view">
           <X className="w-4 h-4" />
         </Button>
       </div>
