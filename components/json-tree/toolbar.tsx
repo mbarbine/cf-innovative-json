@@ -363,11 +363,16 @@ export function Toolbar({
           
           {/* Share & Import Dialog */}
           <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" disabled={!isValid} aria-label="Share or Import JSON">
-                <Link2 className="w-4 h-4" />
-              </Button>
-            </DialogTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" disabled={!isValid} aria-label="Share or Import JSON">
+                    <Link2 className="w-4 h-4" />
+                  </Button>
+                </DialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Share & Import</TooltipContent>
+            </Tooltip>
             <DialogContent className="sm:max-w-md">
               <DialogHeader>
                 <DialogTitle>Share & Import</DialogTitle>
@@ -457,11 +462,16 @@ export function Toolbar({
           </Tooltip>
 
           <Dialog>
-            <DialogTrigger asChild>
-              <Button variant="ghost" size="icon" aria-label="Keyboard Shortcuts">
-                <Keyboard className="w-4 h-4" />
-              </Button>
-            </DialogTrigger>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DialogTrigger asChild>
+                  <Button variant="ghost" size="icon" aria-label="Keyboard Shortcuts">
+                    <Keyboard className="w-4 h-4" />
+                  </Button>
+                </DialogTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Keyboard Shortcuts</TooltipContent>
+            </Tooltip>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Keyboard Shortcuts</DialogTitle>
