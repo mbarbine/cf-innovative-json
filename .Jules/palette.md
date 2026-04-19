@@ -1,3 +1,6 @@
 ## 2024-05-18 - Improve icon-only buttons accessibility and async visual feedback
 **Learning:** Found that some icon-only buttons (like those in the ShareDialog) lacked `aria-label` attributes for screen readers, and some were missing the `size="icon"` property which ensures proper sizing for icon-only buttons in the UI component library. Also, replacing text-based loading states (like "...") with visual spinners (like `Loader2` with `animate-spin`) provides much clearer async feedback for users.
 **Action:** Always ensure icon-only buttons have an `aria-label` and `size="icon"` (if using the standard Button component). Use spinning icons for async operations instead of text.
+## 2026-04-14 - ARIA Labels for Icon-Only Buttons
+**Learning:** Found multiple instances where icon-only buttons lacked ARIA labels, making them inaccessible to screen readers.
+**Action:** Always ensure `aria-label` is added to `Button` components that contain only an icon.
