@@ -553,6 +553,7 @@ function ControlButton({
           )}
           onClick={onClick}
           disabled={disabled}
+          aria-label={tooltip}
         >
           <Icon className="w-4 h-4" />
         </Button>
