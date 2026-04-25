@@ -77,6 +77,7 @@ export const PathBreadcrumb = memo(function PathBreadcrumb({
                 size="icon"
                 className="h-6 w-6"
                 onClick={handleCopy}
+                aria-label="Copy JSON Path"
               >
                 {copied ? (
                   <Check className="w-3.5 h-3.5 text-emerald-500" />
