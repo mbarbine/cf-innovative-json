@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { 
   apiResponse, 
   apiError, 
-  corsHeaders, 
+  createOptionsResponse,
   checkRateLimit, 
   getClientIP,
   validateJsonString,
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   // Rate limiting
   const rateLimit = checkRateLimit(clientIP)
   if (!rateLimit.allowed) {
-    return apiError('Rate limit exceeded. Please try again later.', 429, requestId)
+    return apiError('Rate limit exceeded. Please try again later.', 429, requestId, 'RATE_LIMITED', undefined, request.headers, 'validate_json')
   }
 
   try {
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const { json } = body
 
     if (!json || typeof json !== 'string') {
-      return apiError('Missing or invalid "json" field. Expected a string.', 400, requestId)
+      return apiError('Missing or invalid "json" field. Expected a string.', 400, requestId, 'INVALID_JSON_FIELD', undefined, request.headers, 'validate_json')
     }
 
     // Validate JSON
@@ -38,27 +38,29 @@ export async function POST(request: NextRequest) {
           stats,
         },
         200,
-        requestId
+        requestId,
+        request.headers,
+        'validate_json'
       )
     } else {
       return apiResponse(
         {
           valid: false,
           error: validation.error,
+          line: validation.line,
+          column: validation.column,
         },
         200,
-        requestId
+        requestId,
+        request.headers,
+        'validate_json'
       )
     }
   } catch (error) {
-    console.error('Validate error:', error)
-    return apiError('Internal server error', 500, requestId)
+    return apiError('Internal server error', 500, requestId, 'INTERNAL_ERROR', undefined, request.headers, 'validate_json')
   }
 }
 
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: corsHeaders(),
-  })
+  return createOptionsResponse()
 }

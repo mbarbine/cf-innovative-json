@@ -735,7 +735,7 @@ export const GraphView = memo(function GraphView({
       const timer = setTimeout(fitToScreen, 50)
       return () => clearTimeout(timer)
     }
-  }, [tree?.id])
+  }, [tree?.id, layout, containerSize.width, containerSize.height, fitToScreen])
 
   useEffect(() => {
     const handleGlobalMouseUp = () => setIsDragging(false)

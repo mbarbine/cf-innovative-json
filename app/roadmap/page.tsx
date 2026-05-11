@@ -1,7 +1,6 @@
 import { Metadata } from 'next'
 import { Breadcrumbs } from '@/components/breadcrumbs'
 import Link from 'next/link'
-import { ExternalLink } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Roadmap',
@@ -44,7 +43,7 @@ export default function RoadmapPage() {
             <li><strong>Generative AI:</strong> Add features to generate JSON schemas, mock data, or type definitions (TypeScript, Go, Rust) directly from the visualization using AI.</li>
             <li><strong>Semantic Search:</strong> Implement embedding-based search to find keys/values based on semantic meaning rather than exact string matches.</li>
             <li><strong>AX Optimization:</strong> Ensure all UI state changes reflect clearly in the DOM for automated browser agents.</li>
-            <li><strong>Claws Integration:</strong> Native integration with <a href="https://claws.platphormnews.com" target="_blank" rel="noopener noreferrer" className="text-emerald-500 hover:underline inline-flex items-center gap-1">claws.platphormnews.com <ExternalLink className="w-3 h-3" /></a></li>
+            <li><strong>Cross-site integrations:</strong> Keep JSON focused on JSON/schema tooling while exposing honest degraded states for future Claws, Docs, Sheets, Decks, Evals, BrowserOps, and Trace integrations.</li>
           </ul>
         </section>
 

@@ -2,16 +2,24 @@
 
 import { useCallback, useRef, useEffect, useMemo } from 'react'
 import { cn } from '@/lib/utils'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 
 interface JsonEditorProps {
   value: string
   onChange: (value: string) => void
   isValid: boolean
   error: string | null
+  storageStatus?: string
+  storageTooltip?: string
   className?: string
 }
 
-export function JsonEditor({ value, onChange, isValid, error, className }: JsonEditorProps) {
+export function JsonEditor({ value, onChange, isValid, error, storageStatus = 'Local draft', storageTooltip = 'Drafts are stored in browser IndexedDB only.', className }: JsonEditorProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const lineNumbersRef = useRef<HTMLDivElement>(null)
 
@@ -60,25 +68,52 @@ export function JsonEditor({ value, onChange, isValid, error, className }: JsonE
 
   return (
     <div className={cn('flex flex-col h-full', className)}>
-      <div className="flex items-center justify-between px-3 py-2 border-b border-border bg-muted/30">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between gap-3 px-3 py-2 border-b border-border bg-muted/30">
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
           <span className="text-sm font-medium text-foreground">JSON Editor</span>
-          <span
-            className={cn(
-              'px-2 py-0.5 text-xs rounded-full font-medium',
-              isValid
-                ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                : 'bg-destructive/10 text-destructive'
-            )}
-            role="status"
-            aria-label={isValid ? "JSON is valid" : "JSON is invalid"}
-          >
-            {isValid ? 'Valid' : 'Invalid'}
-          </span>
+          <TooltipProvider delayDuration={250}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className={cn(
+                    'px-2 py-0.5 text-xs rounded-full font-medium cursor-help',
+                    isValid
+                      ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                      : 'bg-destructive/10 text-destructive'
+                  )}
+                  role="status"
+                  aria-label={isValid ? "JSON is valid" : "JSON is invalid"}
+                  tabIndex={0}
+                >
+                  {isValid ? 'Valid' : 'Invalid'}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{isValid ? 'The editor content parses with JSON.parse.' : 'The editor content has a JSON parse error.'}</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span
+                  className="px-2 py-0.5 text-xs rounded-full font-medium bg-blue-500/10 text-blue-600 dark:text-blue-400 cursor-help"
+                  tabIndex={0}
+                  aria-label={storageStatus}
+                >
+                  {storageStatus}
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>{storageTooltip}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
-        <span className="text-xs text-muted-foreground" aria-hidden="true">
-          {lineCount} lines
-        </span>
+        <TooltipProvider delayDuration={250}>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="text-xs text-muted-foreground cursor-help whitespace-nowrap" tabIndex={0}>
+                {lineCount} lines
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>Line count is calculated from the current editor text.</TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
       
       <div className="relative flex-1 overflow-hidden">

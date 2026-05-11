@@ -12,7 +12,7 @@ describe('FAQ Page', () => {
   it('renders FAQ heading and questions', () => {
     render(<FaqPage />)
     expect(screen.getAllByText('Frequently Asked Questions').length).toBeGreaterThan(0)
-    expect(screen.getByText('What is JSON Tree?')).toBeDefined()
-    expect(screen.getByText('How is this related to claws.platphormnews.com?')).toBeDefined()
+    expect(screen.getByText('What is JSON Tree + PlatPhorm Schema Registry?')).toBeDefined()
+    expect(screen.getByText('Do public JSON tools require an API key?')).toBeDefined()
   })
 })

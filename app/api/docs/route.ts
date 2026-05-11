@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { openApiSpec } from '@/lib/openapi'
-import { corsHeaders } from '@/lib/api-utils'
+import { corsHeaders, createOptionsResponse } from '@/lib/api-utils'
 
 export async function GET() {
   return NextResponse.json(openApiSpec, {
@@ -12,8 +12,5 @@ export async function GET() {
 }
 
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: corsHeaders(),
-  })
+  return createOptionsResponse()
 }

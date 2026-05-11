@@ -21,7 +21,10 @@ import {
   Download,
   Upload,
   ArrowLeftRight,
-  Loader2
+  Loader2,
+  X,
+  FileJson2,
+  Trash2
 } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
@@ -45,6 +48,7 @@ import { Label } from "@/components/ui/label"
 import { Kbd } from '@/components/ui/kbd'
 import { formatJson, minifyJson } from '@/lib/json-utils'
 import { createShareUrl, fetchJsonFromUrl } from '@/lib/sharing'
+import { DEFAULT_JSON_SAMPLE } from '@/lib/store'
 import type { ViewMode, TreeStats } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -177,6 +181,14 @@ export function Toolbar({
     input.click()
   }, [setRawJson])
 
+  const handleLoadSample = useCallback(() => {
+    setRawJson(DEFAULT_JSON_SAMPLE)
+  }, [setRawJson])
+
+  const handleClear = useCallback(() => {
+    setRawJson('')
+  }, [setRawJson])
+
   const viewModes: { value: ViewMode; label: string; icon: React.ReactNode }[] = [
     { value: 'tree', label: 'Tree', icon: <ListTree className="w-4 h-4" /> },
     { value: 'graph', label: 'Graph', icon: <Network className="w-4 h-4" /> },
@@ -194,7 +206,7 @@ export function Toolbar({
     { keys: ['1', '2', '3'], description: 'Switch View Modes' }
   ]
 
-  if (!mounted) return null
+  const activeTheme = mounted ? theme : 'light'
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -360,6 +372,26 @@ export function Toolbar({
           </Tooltip>
 
           <div className="w-px h-6 bg-border mx-1" aria-hidden="true" />
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={handleLoadSample} aria-label="Load public schema registry sample">
+                <FileJson2 className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Load a labeled public schema registry sample.</TooltipContent>
+          </Tooltip>
+
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant="ghost" size="icon" onClick={handleClear} aria-label="Clear editor">
+                <Trash2 className="w-4 h-4" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Clear the local editor. No server data is deleted.</TooltipContent>
+          </Tooltip>
+
+          <div className="w-px h-6 bg-border mx-1" aria-hidden="true" />
           
           {/* Share & Import Dialog */}
           <Dialog>
@@ -407,7 +439,7 @@ export function Toolbar({
                       <Input
                         value={importUrl}
                         onChange={(e) => { setImportUrl(e.target.value); setImportError(null) }}
-                        placeholder="https://api.example.com/data.json"
+                        placeholder="https://platphormnews.com/api/network/graph"
                         className="font-mono text-xs h-9"
                         aria-label="Import URL"
                       />
@@ -448,10 +480,10 @@ export function Toolbar({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`}
+                onClick={() => setTheme(activeTheme === 'dark' ? 'light' : 'dark')}
+                aria-label={`Switch to ${activeTheme === 'dark' ? 'light' : 'dark'} theme`}
               >
-                {theme === 'dark' ? (
+                {activeTheme === 'dark' ? (
                   <Sun className="w-4 h-4" />
                 ) : (
                   <Moon className="w-4 h-4" />

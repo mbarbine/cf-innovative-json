@@ -38,13 +38,20 @@ export interface SearchResult {
 export type ViewMode = 'tree' | 'graph' | 'raw'
 
 export interface ApiResponse<T = unknown> {
-  success: boolean
+  ok: boolean
   data?: T
-  error?: string
+  error?: {
+    code: string
+    message: string
+    details?: Record<string, unknown>
+  }
   meta?: {
     timestamp: string
     requestId: string
     version: string
+    traceId?: string
+    spanId?: string
+    traceUrl?: string
   }
 }
 

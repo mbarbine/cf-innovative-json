@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { 
   apiResponse, 
   apiError, 
-  corsHeaders, 
+  createOptionsResponse,
   checkRateLimit, 
   getClientIP,
   validateJsonString
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   // Rate limiting
   const rateLimit = checkRateLimit(clientIP)
   if (!rateLimit.allowed) {
-    return apiError('Rate limit exceeded. Please try again later.', 429, requestId)
+    return apiError('Rate limit exceeded. Please try again later.', 429, requestId, 'RATE_LIMITED', undefined, request.headers, 'diff_json')
   }
 
   try {
@@ -24,22 +24,22 @@ export async function POST(request: NextRequest) {
     const { source, target } = body
 
     if (!source || typeof source !== 'string') {
-      return apiError('Missing or invalid "source" field. Expected a string.', 400, requestId)
+      return apiError('Missing or invalid "source" field. Expected a string.', 400, requestId, 'INVALID_SOURCE_FIELD', undefined, request.headers, 'diff_json')
     }
 
     if (!target || typeof target !== 'string') {
-      return apiError('Missing or invalid "target" field. Expected a string.', 400, requestId)
+      return apiError('Missing or invalid "target" field. Expected a string.', 400, requestId, 'INVALID_TARGET_FIELD', undefined, request.headers, 'diff_json')
     }
 
     // Validate both JSON strings
     const sourceValidation = validateJsonString(source)
     if (!sourceValidation.valid) {
-      return apiError(`Invalid source JSON: ${sourceValidation.error}`, 400, requestId)
+      return apiError(`Invalid source JSON: ${sourceValidation.error}`, 400, requestId, 'INVALID_SOURCE_JSON', { line: sourceValidation.line, column: sourceValidation.column }, request.headers, 'diff_json')
     }
 
     const targetValidation = validateJsonString(target)
     if (!targetValidation.valid) {
-      return apiError(`Invalid target JSON: ${targetValidation.error}`, 400, requestId)
+      return apiError(`Invalid target JSON: ${targetValidation.error}`, 400, requestId, 'INVALID_TARGET_JSON', { line: targetValidation.line, column: targetValidation.column }, request.headers, 'diff_json')
     }
 
     // Calculate diff
@@ -58,17 +58,15 @@ export async function POST(request: NextRequest) {
         },
       },
       200,
-      requestId
+      requestId,
+      request.headers,
+      'diff_json'
     )
   } catch (error) {
-    console.error('Diff error:', error)
-    return apiError('Internal server error', 500, requestId)
+    return apiError('Internal server error', 500, requestId, 'INTERNAL_ERROR', undefined, request.headers, 'diff_json')
   }
 }
 
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: corsHeaders(),
-  })
+  return createOptionsResponse()
 }

@@ -96,13 +96,13 @@ export function ShareDialog({ json, viewMode, isValid }: ShareDialogProps) {
       
       const data = await response.json()
       
-      if (data.success && data.data?.json) {
+      if (data.ok && data.data?.json) {
         // Dispatch custom event to update the editor
         window.dispatchEvent(new CustomEvent('json-import', { 
           detail: { json: data.data.json } 
         }))
       } else {
-        throw new Error(data.error || 'Invalid response')
+        throw new Error(data.error?.message || 'Invalid response')
       }
     } catch (err) {
       setImportError(err instanceof Error ? err.message : 'Failed to import JSON')
@@ -186,7 +186,7 @@ export function ShareDialog({ json, viewMode, isValid }: ShareDialogProps) {
                 <Input
                   value={importUrl}
                   onChange={(e) => setImportUrl(e.target.value)}
-                  placeholder="https://api.example.com/data.json"
+                    placeholder="https://platphormnews.com/api/network/graph"
                   className="font-mono text-xs"
                 />
                 <Button 

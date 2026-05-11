@@ -1,12 +1,11 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { 
   apiResponse, 
   apiError, 
-  corsHeaders, 
+  createOptionsResponse,
   checkRateLimit, 
   getClientIP,
-  validateJsonString,
-  calculateJsonStats
+  validateJsonString
 } from '@/lib/api-utils'
 import { parseJsonToTree, calculateStats, resetNodeIdCounter } from '@/lib/json-utils'
 
@@ -17,7 +16,7 @@ export async function POST(request: NextRequest) {
   // Rate limiting
   const rateLimit = checkRateLimit(clientIP)
   if (!rateLimit.allowed) {
-    return apiError('Rate limit exceeded. Please try again later.', 429, requestId)
+    return apiError('Rate limit exceeded. Please try again later.', 429, requestId, 'RATE_LIMITED', undefined, request.headers, 'parse_json')
   }
 
   try {
@@ -25,13 +24,13 @@ export async function POST(request: NextRequest) {
     const { json, options = {} } = body
 
     if (!json || typeof json !== 'string') {
-      return apiError('Missing or invalid "json" field. Expected a string.', 400, requestId)
+      return apiError('Missing or invalid "json" field. Expected a string.', 400, requestId, 'INVALID_JSON_FIELD', undefined, request.headers, 'parse_json')
     }
 
     // Validate JSON
     const validation = validateJsonString(json)
     if (!validation.valid) {
-      return apiError(`Invalid JSON: ${validation.error}`, 400, requestId)
+      return apiError(`Invalid JSON: ${validation.error}`, 400, requestId, 'INVALID_JSON', { line: validation.line, column: validation.column }, request.headers, 'parse_json')
     }
 
     // Parse to tree
@@ -48,17 +47,15 @@ export async function POST(request: NextRequest) {
         valid: true,
       },
       200,
-      requestId
+      requestId,
+      request.headers,
+      'parse_json'
     )
   } catch (error) {
-    console.error('Parse error:', error)
-    return apiError('Internal server error', 500, requestId)
+    return apiError('Internal server error', 500, requestId, 'INTERNAL_ERROR', undefined, request.headers, 'parse_json')
   }
 }
 
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: corsHeaders(),
-  })
+  return createOptionsResponse()
 }

@@ -17,33 +17,40 @@ interface JsonTreeState {
   historyIndex: number
 }
 
-const defaultJson = `{
-  "name": "JSON Tree Viewer",
-  "version": "1.0.0",
-  "description": "A powerful JSON visualization tool",
-  "features": [
-    "Tree View",
-    "Graph View",
-    "Search",
-    "Format & Minify",
-    "Dark Mode"
-  ],
-  "author": {
-    "name": "Developer",
-    "email": "dev@example.com"
+export const DEFAULT_JSON_SAMPLE = `{
+  "$schema": "https://json.platphormnews.com/schemas/json/realm.schema.json",
+  "sample": true,
+  "sampleLabel": "Public schema registry realm sample",
+  "product": "JSON Tree + PlatPhorm Schema Registry",
+  "purpose": "Inspect, format, validate, search, explore, and validate JSON against public PlatPhorm schema contracts.",
+  "realm": {
+    "id": 100,
+    "universe_id": 1,
+    "slug": "json-tree-schema-registry",
+    "name": "JSON Tree + PlatPhorm Schema Registry",
+    "realm_type": "utility-platform",
+    "primary_domain": "json.platphormnews.com",
+    "canonical_url": "https://json.platphormnews.com",
+    "environment": "production",
+    "visibility": "public",
+    "feature_tags": ["json", "schema-registry", "api", "mcp", "llms"],
+    "environment_tags": ["production"],
+    "governance_tags": ["public", "phase-1"]
   },
-  "config": {
-    "maxDepth": 10,
-    "autoExpand": true,
-    "syntaxHighlight": true
+  "publicAccess": {
+    "editor": "public-safe",
+    "localDrafts": "browser IndexedDB only",
+    "schemaBrowsing": "public-safe",
+    "futureProtectedActions": "PLATPHORM_API_KEY when enabled"
   },
-  "stats": {
-    "users": 1000,
-    "stars": 500,
-    "forks": 100
-  },
-  "isPublic": true,
-  "license": null
+  "schemaFiles": [
+    "/schemas/json/platphorm-universal-schema-pack.json",
+    "/schemas/json/core.schema.json",
+    "/schemas/json/realm.schema.json",
+    "/schemas/json/item.schema.json",
+    "/schemas/json/observability.schema.json",
+    "/schemas/json/agent.schema.json"
+  ]
 }`
 
 function createInitialState(): JsonTreeState {
@@ -54,7 +61,7 @@ function createInitialState(): JsonTreeState {
   let error: string | null = null
 
   try {
-    const parsed = JSON.parse(defaultJson)
+    const parsed = JSON.parse(DEFAULT_JSON_SAMPLE)
     tree = parseJsonToTree(parsed)
     stats = calculateStats(tree)
     isValid = true
@@ -63,7 +70,7 @@ function createInitialState(): JsonTreeState {
   }
 
   return {
-    rawJson: defaultJson,
+    rawJson: DEFAULT_JSON_SAMPLE,
     tree,
     stats,
     viewMode: 'tree',
@@ -73,7 +80,7 @@ function createInitialState(): JsonTreeState {
     expandedNodes: new Set(tree ? collectExpandedNodes(tree) : []),
     isValid,
     error,
-    history: [defaultJson],
+    history: [DEFAULT_JSON_SAMPLE],
     historyIndex: 0
   }
 }

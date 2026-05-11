@@ -16,16 +16,16 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'),
   title: {
-    default: 'JSON Tree - Visualize, Format & Validate JSON | Platphorm News',
-    template: '%s | JSON Tree by Platphorm'
+    default: 'JSON Tree + PlatPhorm Schema Registry',
+    template: '%s | JSON Tree + PlatPhorm Schema Registry'
   },
-  description: 'A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, and REST API. Parse, validate, and explore JSON data structures. Built by Platphorm News.',
-  keywords: ['JSON', 'JSON viewer', 'JSON formatter', 'JSON validator', 'JSON tree', 'JSON visualizer', 'JSON parser', 'developer tools', 'API', 'MCP', 'Platphorm News'],
-  authors: [{ name: 'Platphorm News', url: 'https://platphormnews.com' }],
-  creator: 'Platphorm News',
-  publisher: 'Platphorm News',
+  description: 'Public JSON tree viewer, formatter, validator, schema validation tool, and PlatPhorm schema registry for humans and agents.',
+  keywords: ['JSON', 'JSON viewer', 'JSON formatter', 'JSON validator', 'JSON tree', 'JSON Schema', 'schema registry', 'JSON-LD', 'developer tools', 'API', 'MCP', 'PlatPhormNews'],
+  authors: [{ name: 'PlatPhormNews', url: 'https://platphormnews.com' }],
+  creator: 'PlatPhormNews',
+  publisher: 'PlatPhormNews',
   generator: 'Next.js',
-  applicationName: 'JSON Tree',
+  applicationName: 'JSON Tree + PlatPhorm Schema Registry',
   referrer: 'origin-when-cross-origin',
   formatDetection: {
     email: false,
@@ -36,23 +36,23 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: '/',
-    siteName: 'JSON Tree by Platphorm',
-    title: 'JSON Tree - Visualize, Format & Validate JSON',
-    description: 'A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, REST API, and MCP server. Built by Platphorm News.',
+    siteName: 'JSON Tree + PlatPhorm Schema Registry',
+    title: 'JSON Tree + PlatPhorm Schema Registry',
+    description: 'Public JSON tree viewer, formatter, validator, schema registry, JSON-LD, REST API, and MCP server.',
     images: [
       {
-        url: '/og-image.png',
+        url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'JSON Tree - JSON Visualization Tool by Platphorm News',
+        alt: 'JSON Tree + PlatPhorm Schema Registry',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'JSON Tree - Visualize, Format & Validate JSON',
-    description: 'A powerful JSON visualization tool with tree view, graph view, REST API, and MCP server. Built by Platphorm News.',
-    images: ['/og-image.png'],
+    title: 'JSON Tree + PlatPhorm Schema Registry',
+    description: 'Public JSON tree viewer, formatter, validator, schema registry, REST API, and MCP server.',
+    images: ['/og-image.jpg'],
     creator: '@platphormnews',
   },
   robots: {
@@ -71,9 +71,9 @@ export const metadata: Metadata = {
       { url: '/favicon.ico', sizes: '32x32' },
       { url: '/icon.svg', type: 'image/svg+xml' },
     ],
-    apple: '/apple-touch-icon.png',
+    apple: '/apple-icon.png',
   },
-  manifest: '/manifest.json',
+  manifest: '/manifest.webmanifest',
   alternates: {
     canonical: '/',
     types: {
@@ -99,7 +99,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable}`} suppressHydrationWarning>
       <head>
         <link rel="alternate" type="application/rss+xml" title="JSON Tree RSS Feed" href="/feed.xml" />
         <script
@@ -107,17 +107,17 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
-              "@type": "WebApplication",
-              "name": "JSON Tree",
-              "alternateName": "JSON Tree by Platphorm",
-              "description": "A powerful JSON visualization tool with tree view, graph view, formatting, minifying, search, REST API, and MCP server. Built by Platphorm News.",
+              "@type": ["WebApplication", "SoftwareApplication"],
+              "name": "JSON Tree + PlatPhorm Schema Registry",
+              "alternateName": "JSON Tree",
+              "description": "Public JSON tree viewer, formatter, validator, schema validation tool, JSON-LD contract viewer, REST API, and MCP server.",
               "url": process.env.NEXT_PUBLIC_APP_URL || "https://json.platphormnews.com",
               "applicationCategory": "DeveloperApplication",
               "operatingSystem": "Any",
-              "version": "0.0.1",
+              "version": "1.0.0",
               "author": {
                 "@type": "Organization",
-                "name": "Platphorm News",
+                "name": "PlatPhormNews",
                 "url": "https://platphormnews.com"
               },
               "offers": {
@@ -137,13 +137,27 @@ export default function RootLayout({
                 "Dark/Light Theme",
                 "REST API v1",
                 "MCP Server Integration",
-                "OpenAPI Documentation"
+                "OpenAPI Documentation",
+                "PlatPhorm Universal Schema Pack"
+              ],
+              "isAccessibleForFree": true,
+              "hasPart": [
+                {
+                  "@type": "Dataset",
+                  "name": "PlatPhorm Universal Schema Pack",
+                  "url": "https://json.platphormnews.com/schemas/json/platphorm-universal-schema-pack.json"
+                },
+                {
+                  "@type": "WebPage",
+                  "name": "JSON Tree API documentation",
+                  "url": "https://json.platphormnews.com/docs"
+                }
               ]
             })
           }}
         />
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
+      <body className="font-sans antialiased">
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

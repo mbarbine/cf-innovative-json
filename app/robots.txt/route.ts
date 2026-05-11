@@ -9,11 +9,21 @@ Allow: /
 Allow: /api/docs
 Allow: /api/mcp
 Allow: /api/health
+Allow: /api/v1/health
 Allow: /.well-known/platphorm.json
+Allow: /.well-known/trust.json
+Allow: /.well-known/mcp.json
 Allow: /schemas/
 Allow: /v0/
+Allow: /llms.txt
+Allow: /llms-full.txt
+Allow: /llms-index.json
+Allow: /rss.xml
+Allow: /feed.xml
 
 Sitemap: ${BASE_URL}/sitemap.xml
+Sitemap: ${BASE_URL}/sitemap-main.xml
+Sitemap: ${BASE_URL}/sitemap-index.xml
 `
 
   return new NextResponse(content, {

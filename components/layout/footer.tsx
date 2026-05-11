@@ -2,7 +2,7 @@ import Link from 'next/link'
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
-  const APP_VERSION = '0.0.1'; // Assuming a version, as it was missing too
+  const APP_VERSION = '1.0.0';
 
   return (
     <footer className="flex flex-col sm:flex-row items-center justify-between gap-4 px-4 py-4 sm:py-2 border-t border-border bg-muted/30 text-xs text-muted-foreground">
@@ -11,14 +11,26 @@ export function Footer() {
         <Link href="/docs" className="hover:text-foreground transition-colors">
           API Docs
         </Link>
+        <Link href="/faq" className="hover:text-foreground transition-colors">
+          FAQ
+        </Link>
+        <Link href="/openapi.yaml" className="hover:text-foreground transition-colors">
+          OpenAPI
+        </Link>
+        <Link href="/api/v1/schemas" className="hover:text-foreground transition-colors">
+          Schemas
+        </Link>
         <Link href="/sitemap.xml" className="hover:text-foreground transition-colors">
           Sitemap
         </Link>
-        <Link href="/feed.xml" className="hover:text-foreground transition-colors">
+        <Link href="/rss.xml" className="hover:text-foreground transition-colors">
           RSS
         </Link>
         <Link href="/llms.txt" className="hover:text-foreground transition-colors">
           LLMs
+        </Link>
+        <Link href="/.well-known/trust.json" className="hover:text-foreground transition-colors">
+          Trust
         </Link>
         <span className="text-muted-foreground mx-1">|</span>
         <a href="https://platphormnews.com/api/network/graph" target="_blank" rel="noopener noreferrer" className="hover:text-foreground transition-colors">

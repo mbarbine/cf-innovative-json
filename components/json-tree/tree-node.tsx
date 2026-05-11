@@ -83,9 +83,10 @@ export const TreeNodeComponent = memo(function TreeNodeComponent({
     }
 
     const valueStr = formatValue(node.value, node.type)
+    const displayValue = truncateValue(valueStr, 50)
     return (
       <span className={cn('font-mono', getValueColor(node.type))} aria-label={`${node.type} value ${valueStr}`}>
-        {truncateValue(searchQuery ? String(highlightMatch(valueStr, searchQuery)) : valueStr, 50)}
+        {searchQuery ? highlightMatch(displayValue, searchQuery) : displayValue}
       </span>
     )
   }

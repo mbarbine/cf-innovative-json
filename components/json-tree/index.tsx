@@ -10,10 +10,12 @@ import { TreeView } from './tree-view'
 import { GraphView } from './graph-view'
 import { Toolbar } from './toolbar'
 import { StatsPanel } from './stats-panel'
+import { SchemaRegistryPanel } from './schema-registry-panel'
 import { PathBreadcrumb } from './path-breadcrumb'
 import { DiffView } from './diff-view'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
+import { loadLocalJsonDraft, saveLocalJsonDraft } from '@/lib/local-drafts'
 
 export function JsonTree() {
   const {
@@ -43,8 +45,10 @@ export function JsonTree() {
   const [isDiffOpen, setIsDiffOpen] = useState(false)
   const [compareJson, setCompareJson] = useState('')
   const [selectedPath, setSelectedPath] = useState<string[]>([])
+  const [draftReady, setDraftReady] = useState(false)
+  const [draftStatus, setDraftStatus] = useState('Local draft')
+  const [draftTooltip, setDraftTooltip] = useState('Drafts are stored in browser IndexedDB only. Nothing is saved server-side.')
   
-  // Load JSON from URL params on mount
   useEffect(() => {
     const shared = parseUrlParams()
     if (shared?.json) {
@@ -52,8 +56,46 @@ export function JsonTree() {
       if (shared.viewMode) {
         setViewMode(shared.viewMode)
       }
+      setDraftStatus('Shared URL')
+      setDraftTooltip('This JSON was restored from the compressed URL parameter. It is still local to this browser.')
+      setDraftReady(true)
+      return
     }
+
+    loadLocalJsonDraft()
+      .then((draft) => {
+        if (draft?.content) {
+          setRawJson(draft.content)
+          setDraftStatus('Local draft')
+          setDraftTooltip(`Restored from browser IndexedDB. Last saved ${new Date(draft.updatedAt).toLocaleString()}.`)
+        } else {
+          setDraftStatus('Labeled sample')
+          setDraftTooltip('The editor starts with a labeled public sample. Edits are saved to browser IndexedDB only.')
+        }
+      })
+      .catch(() => {
+        setDraftStatus('Degraded storage')
+        setDraftTooltip('IndexedDB is unavailable. The editor still works, but local draft restore may not persist after reload.')
+      })
+      .finally(() => setDraftReady(true))
   }, [setRawJson, setViewMode])
+
+  useEffect(() => {
+    if (!draftReady) return
+    const timeout = window.setTimeout(() => {
+      saveLocalJsonDraft(rawJson)
+        .then((draft) => {
+          setDraftStatus('Local draft')
+          setDraftTooltip(`Saved locally in browser IndexedDB at ${new Date(draft.updatedAt).toLocaleTimeString()}. No server persistence is claimed.`)
+        })
+        .catch(() => {
+          setDraftStatus('Degraded storage')
+          setDraftTooltip('IndexedDB save failed. Export the JSON if you need to keep it.')
+        })
+    }, 600)
+
+    return () => window.clearTimeout(timeout)
+  }, [rawJson, draftReady])
   
   // Update selected path when node is selected
   useEffect(() => {
@@ -188,6 +230,8 @@ export function JsonTree() {
             onChange={setRawJson}
             isValid={isValid}
             error={error}
+            storageStatus={draftStatus}
+            storageTooltip={draftTooltip}
             className="h-full"
           />
         </ResizablePanel>
@@ -236,6 +280,7 @@ export function JsonTree() {
             </div>
             
             <StatsPanel stats={stats} />
+            <SchemaRegistryPanel rawJson={rawJson} isValid={isValid} />
           </div>
         </ResizablePanel>
         

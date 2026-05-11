@@ -1,57 +1,40 @@
-import { NextResponse } from 'next/server'
-import { corsHeaders } from '@/lib/api-utils'
+import { NextRequest } from 'next/server'
+import { apiError, apiResponse, createOptionsResponse } from '@/lib/api-utils'
+import { verifyPlatformAuth } from '@/lib/auth'
 
-export async function POST() {
-  try {
-    const urlsToRegister = [
-      'https://platphormnews.com/api/network/graph',
-      'https://platphormnews.com/api/docs',
-      'https://mcp.platphormnews.com'
-    ];
+export async function POST(request: NextRequest) {
+  const auth = verifyPlatformAuth(request, 'protected')
+  const requestId = request.headers.get('x-request-id') || undefined
 
-    const results = await Promise.allSettled(
-      urlsToRegister.map(async (url) => {
-        try {
-          const response = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-               domain: 'json.platphormnews.com',
-               url: 'https://json.platphormnews.com',
-               type: 'tool',
-               capabilities: ['mcp', 'api', 'docs', 'health']
-            })
-          });
-          return { url, status: response.status };
-        } catch (e) {
-           return { url, error: (e as Error).message };
-        }
-      })
-    );
-
-    return NextResponse.json({ success: true, results }, {
-      headers: corsHeaders()
-    });
-  } catch (error) {
-    return NextResponse.json({ error: (error as Error).message }, {
-      status: 500,
-      headers: corsHeaders()
-    });
+  if (!auth.allowed) {
+    return apiError(auth.reason, 401, requestId, 'AUTH_REQUIRED', { boundary: auth.boundary }, request.headers, 'mcp_register')
   }
+
+  return apiResponse(
+    {
+      status: 'degraded',
+      message: 'MCP registry mutation is scaffolded as a future protected action. No external registration was executed in Phase 1.',
+    },
+    200,
+    requestId,
+    request.headers,
+    'mcp_register',
+  )
 }
 
-export async function GET() {
-   return NextResponse.json({ message: "Use POST to register." }, {
-      status: 405,
-      headers: corsHeaders()
-   })
+export async function GET(request: NextRequest) {
+  return apiResponse(
+    {
+      status: 'future-protected',
+      message: 'Use POST with PLATPHORM_API_KEY after registry mutation is configured.',
+    },
+    200,
+    request.headers.get('x-request-id') || undefined,
+    request.headers,
+    'mcp_register_info',
+  )
 }
 
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: corsHeaders(),
-  })
+  return createOptionsResponse()
 }

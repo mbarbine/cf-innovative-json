@@ -5,8 +5,6 @@ import { Copy, Check, ChevronDown, ChevronRight, ExternalLink } from 'lucide-rea
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ScrollArea } from '@/components/ui/scroll-area'
-import { cn } from '@/lib/utils'
 
 const BASE_URL = typeof window !== 'undefined' ? window.location.origin : ''
 
@@ -16,7 +14,7 @@ const endpoints = [
     path: '/api/health',
     description: 'Health check endpoint',
     response: `{
-  "success": true,
+  "ok": true,
   "data": {
     "status": "healthy",
     "version": "1.0.0",
@@ -35,7 +33,7 @@ const endpoints = [
   }
 }`,
     response: `{
-  "success": true,
+  "ok": true,
   "data": {
     "tree": { ... },
     "stats": {
@@ -54,7 +52,7 @@ const endpoints = [
   "indent": 2
 }`,
     response: `{
-  "success": true,
+  "ok": true,
   "data": {
     "formatted": "{\\n  \\"a\\": 1,\\n  \\"b\\": 2\\n}",
     "length": 24
@@ -69,7 +67,7 @@ const endpoints = [
   "json": "{\\n  \\"a\\": 1\\n}"
 }`,
     response: `{
-  "success": true,
+  "ok": true,
   "data": {
     "minified": "{\\"a\\":1}",
     "saved": 12,
@@ -85,7 +83,7 @@ const endpoints = [
   "json": "{\\"valid\\": true}"
 }`,
     response: `{
-  "success": true,
+  "ok": true,
   "data": {
     "valid": true,
     "stats": { ... }
@@ -101,7 +99,7 @@ const endpoints = [
   "target": "{\\"a\\": 2, \\"b\\": 3}"
 }`,
     response: `{
-  "success": true,
+  "ok": true,
   "data": {
     "diff": {
       "added": ["b"],
@@ -145,32 +143,40 @@ const mcpTools = [
     ]
   },
   {
-    name: 'diff_json',
-    description: 'Compare two JSON objects',
-    params: [
-      { name: 'source', type: 'string', required: true },
-      { name: 'target', type: 'string', required: true }
-    ]
-  },
-  {
-    name: 'search_json',
-    description: 'Search within JSON structure',
-    params: [
-      { name: 'json', type: 'string', required: true },
-      { name: 'query', type: 'string', required: true },
-      { name: 'caseSensitive', type: 'boolean', required: false }
-    ]
-  },
-  {
     name: 'get_json_stats',
     description: 'Get detailed statistics about JSON',
     params: [
       { name: 'json', type: 'string', required: true }
     ]
   },
+  {
+    name: 'validate_against_schema',
+    description: 'Validate JSON against a public PlatPhorm schema',
+    params: [
+      { name: 'json', type: 'string', required: true },
+      { name: 'schemaSlug', type: 'string', required: true }
+    ]
+  },
+  {
+    name: 'list_schemas',
+    description: 'List public schema registry files',
+    params: []
+  },
+  {
+    name: 'get_schema_pack',
+    description: 'Get public schema pack metadata',
+    params: []
+  },
+  {
+    name: 'validate_jsonld',
+    description: 'Validate JSON-LD structure locally',
+    params: [
+      { name: 'json', type: 'string', required: true }
+    ]
+  },
 ]
 
-function CodeBlock({ code, language = 'json' }: { code: string; language?: string }) {
+function CodeBlock({ code }: { code: string }) {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
@@ -244,7 +250,7 @@ export function ApiDocsClient() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">API Documentation</h1>
         <p className="text-muted-foreground">
-          Complete documentation for the JSON Tree REST API and MCP Server. Now fully integrated with <a href="https://claws.platphormnews.com" target="_blank" rel="noopener noreferrer" className="underline hover:text-foreground transition-colors">claws.platphormnews.com</a>.
+          Complete documentation for the JSON Tree + PlatPhorm Schema Registry REST API and MCP Server. Public-safe JSON and schema operations are open by default; future protected actions use PLATPHORM_API_KEY when enabled.
         </p>
       </div>
 
@@ -258,7 +264,7 @@ export function ApiDocsClient() {
         <TabsContent value="rest" className="space-y-6">
           <div className="bg-muted/30 rounded-lg p-4">
             <h3 className="font-medium mb-2">Base URL</h3>
-            <code className="text-sm bg-muted px-2 py-1 rounded">{BASE_URL}/api/v1</code>
+            <code className="text-sm bg-muted px-2 py-1 rounded">{BASE_URL || 'https://json.platphormnews.com'}/api/v1</code>
           </div>
 
           <div className="bg-muted/30 rounded-lg p-4">
@@ -346,8 +352,8 @@ Content-Type: application/json
                   <p className="text-muted-foreground">JSON Tree is a powerful visualization tool built by Platphorm News. It provides an intuitive interface for editing, formatting, validating, and interacting with JSON data.</p>
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg mb-2">How is this related to claws.platphormnews.com?</h3>
-                  <p className="text-muted-foreground">JSON Tree integrates deeply with claws.platphormnews.com to leverage advanced schema registries, AI model contexts, and robust network graphing.</p>
+                  <h3 className="font-semibold text-lg mb-2">How does this relate to other PlatPhorm services?</h3>
+                  <p className="text-muted-foreground">JSON Tree is the JSON utility and schema registry layer. Other PlatPhorm services are integrations and are reported as degraded unless real backing behavior is configured.</p>
                 </div>
                 <div>
                   <h3 className="font-semibold text-lg mb-2">What is MCP?</h3>

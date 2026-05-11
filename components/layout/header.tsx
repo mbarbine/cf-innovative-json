@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 
-const APP_VERSION = '0.0.1'
+const APP_VERSION = '1.0.0'
 
 export function Header() {
   const [mounted, setMounted] = useState(false)
@@ -29,8 +29,8 @@ export function Header() {
             <FileJson2 className="w-5 h-5 text-white" />
           </div>
           <div className="flex flex-col">
-            <span className="font-semibold text-lg text-foreground leading-tight">JSON Tree</span>
-            <span className="text-[10px] text-muted-foreground leading-none hidden sm:block">by Platphorm News</span>
+            <span className="font-semibold text-lg text-foreground leading-tight">JSON Tree + Schema Registry</span>
+            <span className="text-[10px] text-muted-foreground leading-none hidden sm:block">json.platphormnews.com</span>
           </div>
         </Link>
         <span className="hidden sm:inline-block px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-600 rounded-full">
@@ -57,6 +57,18 @@ export function Header() {
                 <Link href="/api/health" className="flex items-center gap-2">
                   <ExternalLink className="w-4 h-4" />
                   Health Check
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/openapi.yaml" className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  OpenAPI YAML
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/api/v1/schemas" className="flex items-center gap-2">
+                  <FileJson2 className="w-4 h-4" />
+                  Schema Registry
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuSeparator />

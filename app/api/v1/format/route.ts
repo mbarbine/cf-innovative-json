@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 import { 
   apiResponse, 
   apiError, 
-  corsHeaders, 
+  createOptionsResponse,
   checkRateLimit, 
   getClientIP,
   validateJsonString,
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
   // Rate limiting
   const rateLimit = checkRateLimit(clientIP)
   if (!rateLimit.allowed) {
-    return apiError('Rate limit exceeded. Please try again later.', 429, requestId)
+    return apiError('Rate limit exceeded. Please try again later.', 429, requestId, 'RATE_LIMITED', undefined, request.headers, 'format_json')
   }
 
   try {
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     const { json, indent = 2 } = body
 
     if (!json || typeof json !== 'string') {
-      return apiError('Missing or invalid "json" field. Expected a string.', 400, requestId)
+      return apiError('Missing or invalid "json" field. Expected a string.', 400, requestId, 'INVALID_JSON_FIELD', undefined, request.headers, 'format_json')
     }
 
     // Validate indent
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest) {
     // Validate JSON first
     const validation = validateJsonString(json)
     if (!validation.valid) {
-      return apiError(`Invalid JSON: ${validation.error}`, 400, requestId)
+      return apiError(`Invalid JSON: ${validation.error}`, 400, requestId, 'INVALID_JSON', { line: validation.line, column: validation.column }, request.headers, 'format_json')
     }
 
     // Format
@@ -46,17 +46,15 @@ export async function POST(request: NextRequest) {
         originalLength: json.length,
       },
       200,
-      requestId
+      requestId,
+      request.headers,
+      'format_json'
     )
   } catch (error) {
-    console.error('Format error:', error)
-    return apiError('Internal server error', 500, requestId)
+    return apiError('Internal server error', 500, requestId, 'INTERNAL_ERROR', undefined, request.headers, 'format_json')
   }
 }
 
 export async function OPTIONS() {
-  return new NextResponse(null, {
-    status: 204,
-    headers: corsHeaders(),
-  })
+  return createOptionsResponse()
 }

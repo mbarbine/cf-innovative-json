@@ -3,6 +3,7 @@
 import { memo } from 'react'
 import type { TreeStats } from '@/lib/types'
 import { cn } from '@/lib/utils'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface StatsPanelProps {
   stats: TreeStats | null
@@ -24,12 +25,18 @@ export const StatsPanel = memo(function StatsPanel({ stats, className }: StatsPa
   const total = statItems.reduce((sum, item) => sum + (stats[item.key] || 0), 0)
 
   return (
+    <TooltipProvider delayDuration={250}>
     <div className={cn('p-4 border-t border-border bg-muted/30', className)}>
       <div className="flex items-center gap-2 mb-3">
         <h3 className="text-sm font-medium text-foreground">Statistics</h3>
-        <span className="text-xs text-muted-foreground">
-          {stats.totalNodes} total nodes, max depth {stats.maxDepth}
-        </span>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="text-xs text-muted-foreground cursor-help" tabIndex={0}>
+              {stats.totalNodes} total nodes, max depth {stats.maxDepth}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent>Stats are computed from the current parsed JSON tree, not a cached or fake count.</TooltipContent>
+        </Tooltip>
       </div>
 
       {/* Bar Chart */}
@@ -55,18 +62,24 @@ export const StatsPanel = memo(function StatsPanel({ stats, className }: StatsPa
         {statItems.map((item) => {
           const value = stats[item.key] || 0
           return (
-            <div key={item.key} className="flex items-center gap-1.5">
-              <div className={cn('w-2.5 h-2.5 rounded-sm', item.color)} />
-              <span className="text-xs text-muted-foreground">
-                {item.label}
-              </span>
-              <span className="text-xs font-medium text-foreground ml-auto">
-                {value}
-              </span>
-            </div>
+            <Tooltip key={item.key}>
+              <TooltipTrigger asChild>
+                <div className="flex items-center gap-1.5 cursor-help" tabIndex={0}>
+                  <div className={cn('w-2.5 h-2.5 rounded-sm', item.color)} />
+                  <span className="text-xs text-muted-foreground">
+                    {item.label}
+                  </span>
+                  <span className="text-xs font-medium text-foreground ml-auto">
+                    {value}
+                  </span>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>{item.label} counted from the current valid JSON.</TooltipContent>
+            </Tooltip>
           )
         })}
       </div>
     </div>
+    </TooltipProvider>
   )
 })
