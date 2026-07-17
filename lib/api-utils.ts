@@ -82,6 +82,46 @@ export function apiResponse<T>(
   )
 }
 
+// Check if a URL is safe to fetch (prevent SSRF)
+export function isSafeUrl(urlString: string): boolean {
+  try {
+    const parsedUrl = new URL(urlString)
+    const hostname = parsedUrl.hostname.toLowerCase()
+
+    // Block localhost
+    if (hostname === 'localhost' || hostname.endsWith('.localhost') || hostname.endsWith('.local')) {
+      return false
+    }
+
+    // Block IPv4 loopback and private ranges
+    // Loopback: 127.0.0.0/8
+    // Private: 10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16
+    // Cloud metadata: 169.254.0.0/16
+    const isPrivateIPv4 = /^(10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2[0-9]|3[0-1])\.)\d+/.test(hostname)
+    const isLoopback = /^127\.\d+\.\d+\.\d+$/.test(hostname) || /^127\.\d+$/.test(hostname)
+    const isObfuscatedIP = /^0x|^0\d|^\d+$/.test(hostname)
+
+    if (isPrivateIPv4 || isLoopback || isObfuscatedIP) {
+      return false
+    }
+
+    // Block IPv6 loopback and private ranges
+    // Loopback: ::1
+    // Unique local: fc00::/7
+    // Link-local: fe80::/10
+    const isPrivateIPv6 = hostname === '[::1]' || /^\[(fc|fd|fe[89ab])/i.test(hostname)
+
+    if (isPrivateIPv6) {
+      return false
+    }
+
+    return true
+  } catch {
+    return false // If we can't parse it, it's not safe
+  }
+}
+
+// Standard error response
 export function apiError(
   message: string,
   status = 400,

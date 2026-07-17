@@ -1,12 +1,8 @@
 import { NextRequest } from 'next/server'
-import { apiResponse, apiError, generateRequestId, createOptionsResponse } from '@/lib/api-utils'
+import { apiResponse, apiError, createOptionsResponse, generateRequestId, isSafeUrl } from '@/lib/api-utils'
 
 function isTrustedPlatphormHost(hostname: string): boolean {
-  const normalized = hostname.toLowerCase()
-  if (normalized === 'localhost' || normalized.endsWith('.localhost')) return false
-  if (/^(127\.|10\.|192\.168\.|169\.254\.|0\.0\.0\.0)/.test(normalized)) return false
-  if (/^172\.(1[6-9]|2\d|3[0-1])\./.test(normalized)) return false
-  if (normalized === 'metadata.google.internal' || normalized === '169.254.169.254') return false
+  const normalized = hostname.toLowerCase().replace(/\.$/, '')
   return normalized === 'platphormnews.com' || normalized.endsWith('.platphormnews.com')
 }
 
@@ -36,6 +32,11 @@ export async function POST(request: NextRequest) {
 
     if (!isTrustedPlatphormHost(parsedUrl.hostname)) {
       return apiError('Phase 1 server-side URL import is limited to trusted *.platphormnews.com hosts.', 403, requestId, 'UNTRUSTED_HOST', { host: parsedUrl.hostname }, request.headers, 'fetch_json_url')
+    }
+
+    // SSRF Protection: Ensure URL does not point to internal/private networks
+    if (!isSafeUrl(url)) {
+      return apiError('The provided URL is not allowed', 400, requestId)
     }
     
     // Fetch the JSON from the URL
