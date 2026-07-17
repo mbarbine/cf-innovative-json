@@ -1,5 +1,10 @@
 import { NextRequest } from 'next/server'
-import { apiResponse, apiError, generateRequestId, isSafeUrl } from '@/lib/api-utils'
+import { apiResponse, apiError, createOptionsResponse, generateRequestId, isSafeUrl } from '@/lib/api-utils'
+
+function isTrustedPlatphormHost(hostname: string): boolean {
+  const normalized = hostname.toLowerCase().replace(/\.$/, '')
+  return normalized === 'platphormnews.com' || normalized.endsWith('.platphormnews.com')
+}
 
 export async function POST(request: NextRequest) {
   const requestId = generateRequestId()
