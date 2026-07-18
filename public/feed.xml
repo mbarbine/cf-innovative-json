@@ -1,0 +1,14 @@
+﻿<?xml version=""1.0"" encoding=""UTF-8"" ?>
+<rss version=""2.0">
+  <channel>
+    <title>json</title>
+    <link>https://json.platphormnews.com</link>
+    <description>Feed for the json service</description>
+    <lastBuildDate>2026-07-18T19:04:19.130-04:00</lastBuildDate>
+    <item>
+      <title>json service status</title>
+      <link>https://json.platphormnews.com/status</link>
+      <description>Current status and discovery summary.</description>
+    </item>
+  </channel>
+</rss>

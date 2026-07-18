@@ -1,0 +1,7 @@
+﻿{
+  "name": ""json",
+  "version": ""1.0.0"",
+  "description": ""MCP discovery manifest for json",
+  "apiUrl": ""https://json.platphormnews.com/api/mcp"",
+  "protocol": ""json-rpc-2.0"
+}

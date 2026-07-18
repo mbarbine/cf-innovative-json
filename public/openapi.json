@@ -1,0 +1,27 @@
+﻿{
+  "openapi": ""3.1.0"",
+  "info": { "title": ""json API"", "version": ""1.0.0"" },
+  "servers": [ { "url": ""https://json.platphormnews.com"" } ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": ""Health check"",
+        "operationId": ""getHealth"",
+        "tags": [""Health""],
+        "responses": {
+          "200": { "description": ""Service health"" }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "summary": ""Health check v1"",
+        "operationId": ""getHealthV1"",
+        "tags": [""Health""],
+        "responses": {
+          "200": { "description": ""Service health"" }
+        }
+      }
+    }
+  }
+}

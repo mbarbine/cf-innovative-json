@@ -1,0 +1,10 @@
+﻿{
+  "generated": ""2026-07-18T19:04:19.130-04:00"",
+  "version": ""1.0.0"",
+  "site": ""System.Management.Automation.Internal.Host.InternalHost"",
+  "primary": [
+    { "url": ""https://json.platphormnews.com/"", "title": ""json"", "description": ""Primary service landing page."" },
+    { "url": ""https://json.platphormnews.com/status/contracts"", "title": ""Service contracts"", "description": ""Contracts and support status."" },
+    { "url": ""https://json.platphormnews.com/faq"", "title": ""FAQ"", "description": ""Frequently asked questions."" }
+  ]
+}

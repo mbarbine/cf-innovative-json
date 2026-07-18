@@ -1,0 +1,7 @@
+﻿# llms.txt for json
+
+- https://json.platphormnews.com/
+- https://json.platphormnews.com/support
+- https://json.platphormnews.com/status
+- https://json.platphormnews.com/faq
+- https://json.platphormnews.com/api/health
