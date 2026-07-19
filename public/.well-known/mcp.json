@@ -1,7 +1,10 @@
-﻿{
-  "name": ""json",
-  "version": ""1.0.0"",
-  "description": ""MCP discovery manifest for json",
-  "apiUrl": ""https://json.platphormnews.com/api/mcp"",
-  "protocol": ""json-rpc-2.0"
+{
+    "description":  "MCP manifest for Json",
+    "updatedAt":  "2026-07-19T01:53:51Z",
+    "name":  "Json",
+    "transport":  "https",
+    "discoveryUrl":  "https://platphorm-json.platphormnews.com/.well-known/mcp.json",
+    "apiUrl":  "https://platphorm-json.platphormnews.com/api/mcp",
+    "protocol":  "json-rpc-2.0",
+    "version":  "1.0.0"
 }

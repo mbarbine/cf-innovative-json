@@ -1,13 +1,13 @@
-﻿<?xml version=""1.0"" encoding=""UTF-8"" ?>
-<rss version=""2.0">
+<?xml version="1.0" encoding="UTF-8" ?>
+<rss version="2.0">
   <channel>
-    <title>json</title>
-    <link>https://json.platphormnews.com</link>
+    <title>Json</title>
+    <link>https://platphorm-json.platphormnews.com</link>
     <description>Feed for the json service</description>
-    <lastBuildDate>2026-07-18T19:04:19.130-04:00</lastBuildDate>
+    <lastBuildDate>Sun, 19 Jul 2026 01:53:51 GMT</lastBuildDate>
     <item>
-      <title>json service status</title>
-      <link>https://json.platphormnews.com/status</link>
+      <title>Json service status</title>
+      <link>https://platphorm-json.platphormnews.com/status</link>
       <description>Current status and discovery summary.</description>
     </item>
   </channel>

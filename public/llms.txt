@@ -1,7 +1,6 @@
-﻿# llms.txt for json
-
-- https://json.platphormnews.com/
-- https://json.platphormnews.com/support
-- https://json.platphormnews.com/status
-- https://json.platphormnews.com/faq
-- https://json.platphormnews.com/api/health
+Json public docs: https://platphorm-json.platphormnews.com
+https://platphorm-json.platphormnews.com/
+https://platphorm-json.platphormnews.com/api/health
+https://platphorm-json.platphormnews.com/.well-known/mcp.json
+https://platphorm-json.platphormnews.com/openapi.json
+https://platphorm-json.platphormnews.com/rss.xml

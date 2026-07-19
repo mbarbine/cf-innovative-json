@@ -1,24 +1,11 @@
-﻿json service discovery page.
-Primary domain: https://json.platphormnews.com
+# Json
 
-Overview:
-This endpoint supports public discovery and AI-readiness tooling for the json service in the PlatPhorm News network.
-
-Useful endpoints:
-- https://json.platphormnews.com/
-- https://json.platphormnews.com/support
-- https://json.platphormnews.com/status
-- https://json.platphormnews.com/faq
-- https://json.platphormnews.com/api/health
-- https://json.platphormnews.com/api/v1/health
-- https://json.platphormnews.com/api/docs
-- https://json.platphormnews.com/openapi.yaml
-- https://json.platphormnews.com/openapi.json
-- https://json.platphormnews.com/llms.txt
-- https://json.platphormnews.com/llms-full.txt
-- https://json.platphormnews.com/robots.txt
-- https://json.platphormnews.com/sitemap.xml
-- https://json.platphormnews.com/rss.xml
-- https://json.platphormnews.com/feed.xml
-- https://json.platphormnews.com/.well-known/mcp.json
-- https://json.platphormnews.com/.well-known/agents.json
+Service endpoints:
+- https://platphorm-json.platphormnews.com/
+- https://platphorm-json.platphormnews.com/api/health
+- https://platphorm-json.platphormnews.com/.well-known/mcp.json
+- https://platphorm-json.platphormnews.com/openapi.json
+- https://platphorm-json.platphormnews.com/rss.xml
+- https://platphorm-json.platphormnews.com/sitemap.xml
+- https://platphorm-json.platphormnews.com/manifest.webmanifest
+- https://platphorm-json.platphormnews.com/robots.txt
