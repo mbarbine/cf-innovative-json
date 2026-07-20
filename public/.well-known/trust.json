@@ -1,8 +1,15 @@
 {
-    "version":  "1.0.0",
-    "updatedAt":  "2026-07-19T01:53:51Z",
-    "site":  "platphorm-json",
-    "publisher":  "PlatPhorm",
-    "aiDisclosure":  "Public content is intended for indexing with attribution and source integrity checks.",
-    "contact":  "mailto:hello@platphormnews.com"
+  "version": "1.0.0",
+  "updatedAt": "2026-07-20T00:00:00Z",
+  "site": "platphorm-json",
+  "publisher": "PlatPhorm",
+  "policy": "Web dashboard, public-safe discovery, browser-based operations, trusted-domain discovery, standard route compliance, Vercel metadata capture, trace inspection, and agentic workflow discovery are intentionally supported for public read-only debugging and operator workflows. Mutating, administrative, ingestion, replay, fork, remediation, deployment, sync, test-triggering, reporting, and write actions require PLATPHORM_API_KEY.",
+  "publicSafeReadOnly": true,
+  "protectedActions": [
+    "Authorization: Bearer $PLATPHORM_API_KEY",
+    "X-PlatPhorm-API-Key"
+  ],
+  "trustedDomains": ["*.platphormnews.com"],
+  "contact": "mailto:hello@platphormnews.com",
+  "securityContact": "mailto:security@platphormnews.com"
 }
