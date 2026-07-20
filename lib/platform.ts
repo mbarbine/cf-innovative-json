@@ -3,7 +3,7 @@ export const SERVICE_ID = 'json'
 export const SERVICE_DOMAIN = 'json.platphormnews.com'
 export const PRODUCT_NAME = 'JSON Tree + PlatPhorm Schema Registry'
 export const PRODUCT_SHORT_NAME = 'JSON Tree'
-export const APP_VERSION = '1.0.0'
+export const APP_VERSION = '1.4.0'
 export const PLATFORM_SOURCE_SITE = 'json'
 
 export const TRUST_POLICY_LINE =

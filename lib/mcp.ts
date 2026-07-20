@@ -3,7 +3,7 @@ import { buildLlmsTxt, buildTrustPolicy, getDiscoveryCompliance, getRouteComplia
 import { openApiSpec } from './openapi'
 import { getJsonLdArtifacts, getSchema, getSchemaPack, getUniverseRegistry, listSchemas, validateJsonAgainstSchema, validateJsonLd } from './schema-registry'
 import { createTraceContext } from './trace'
-import { PRODUCT_NAME } from './platform'
+import { APP_VERSION, PRODUCT_NAME } from './platform'
 
 type JsonRpcId = string | number | null
 type JsonRpcRequest = {
@@ -256,7 +256,7 @@ async function handleSingleRequest(body: JsonRpcRequest, headers?: Headers): Pro
           },
           serverInfo: {
             name: 'json-tree-platphorm-schema-registry',
-            version: '1.0.0',
+            version: APP_VERSION,
           },
         },
       }

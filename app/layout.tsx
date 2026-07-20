@@ -114,7 +114,7 @@ export default function RootLayout({
               "url": process.env.NEXT_PUBLIC_APP_URL || "https://json.platphormnews.com",
               "applicationCategory": "DeveloperApplication",
               "operatingSystem": "Any",
-              "version": "1.0.0",
+              "version": "1.4.0",
               "author": {
                 "@type": "Organization",
                 "name": "PlatPhormNews",

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { corsHeaders } from '@/lib/api-utils'
+import { APP_VERSION } from '@/lib/platform'
 
 // MCP SSE endpoint for streaming communication
 export async function GET(request: NextRequest) {
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
         method: 'connection/established',
         params: {
           serverName: 'json-tree-mcp',
-          version: '1.0.0',
+          version: APP_VERSION,
         },
       })}\n\n`
       

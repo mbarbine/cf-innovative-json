@@ -8,6 +8,7 @@ import {
   SERVICE_DOMAIN,
   TRUST_POLICY_LINE,
   V0_ROUTES,
+  APP_VERSION,
   absoluteUrl,
 } from './platform'
 import { getAuthPolicy } from './auth'
@@ -204,7 +205,7 @@ export function buildLlmsIndex() {
   return {
     service: 'json',
     name: PRODUCT_NAME,
-    version: '1.0.0',
+    version: APP_VERSION,
     baseUrl: BASE_URL,
     endpoints: ALL_ROUTES,
     authPolicy: getAuthPolicy('future-protected'),
@@ -260,6 +261,11 @@ export function buildTrustPolicy() {
     product: PRODUCT_NAME,
     publicSafeAccess: true,
     policy: TRUST_POLICY_LINE,
+    authentication: {
+      publicReadOnly: true,
+      apiKey: 'PLATPHORM_API_KEY',
+      acceptedHeaders: ['Authorization: Bearer $PLATPHORM_API_KEY', 'X-PlatPhorm-API-Key: $PLATPHORM_API_KEY'],
+    },
     auth: getAuthPolicy('future-protected'),
     domainAllowlist: ['*.platphormnews.com'],
     publicReadOnlyAccess: ['homepage', 'json editor', 'format', 'minify', 'validate', 'stats', 'schema browsing', 'schema validation', 'llms', 'rss', 'sitemap', 'health', 'read-only MCP introspection'],

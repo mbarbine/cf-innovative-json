@@ -1,4 +1,4 @@
-import { API_ROUTES, BASE_URL, PRODUCT_NAME, SCHEMA_FILES } from './platform'
+import { API_ROUTES, APP_VERSION, BASE_URL, PRODUCT_NAME, SCHEMA_FILES } from './platform'
 
 const okEnvelope = (dataSchema: Record<string, unknown>) => ({
   type: 'object',
@@ -34,7 +34,7 @@ export const openApiSpec = {
     title: `${PRODUCT_NAME} API`,
     description:
       'Public-safe JSON parse, format, minify, validation, schema registry, JSON-LD, v0 registry, and MCP discovery API for json.platphormnews.com.',
-    version: '1.0.0',
+    version: APP_VERSION,
     contact: {
       name: 'PlatPhormNews',
       url: 'https://platphormnews.com',

@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { corsHeaders, createOptionsResponse } from '@/lib/api-utils'
 import { MCP_PROMPTS, MCP_RESOURCES, MCP_TOOLS, handleMcpRequest } from '@/lib/mcp'
-import { BASE_URL, PRODUCT_NAME } from '@/lib/platform'
+import { APP_VERSION, BASE_URL, PRODUCT_NAME } from '@/lib/platform'
 
 export async function GET() {
   return NextResponse.json(
     {
       name: 'json-tree-platphorm-schema-registry',
       product: PRODUCT_NAME,
-      version: '1.0.0',
+      version: APP_VERSION,
       protocolVersion: '2024-11-05',
       description: 'Public-safe JSON Tree and PlatPhorm Schema Registry MCP server.',
       publicReadOnly: true,

@@ -17,7 +17,7 @@ const endpoints = [
   "ok": true,
   "data": {
     "status": "healthy",
-    "version": "1.0.0",
+    "version": "1.4.0",
     "uptime": 12345
   }
 }`
