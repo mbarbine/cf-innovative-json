@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server'
+import { after, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { APP_VERSION } from './platform'
-import { createTraceContext, traceHeaders, captureVercelRequestMetadata } from './trace'
+import { createTraceContext, traceHeaders, captureVercelRequestMetadata, exportJsonSpan, type TraceContext } from './trace'
 
 export const API_VERSION = 'v1'
 export const MAX_JSON_BYTES = 1024 * 1024
@@ -50,6 +50,27 @@ function createMeta(requestId?: string, headers?: Headers, operation = 'json_api
   }
 }
 
+function scheduleJsonSpan(trace: TraceContext, operation: string, status: 'completed' | 'failed', httpStatus: number) {
+  if (!process.env.PLATPHORM_API_KEY) return 'disabled'
+  try {
+    after(() => exportJsonSpan({
+      context: trace,
+      operation,
+      startTime: new Date().toISOString(),
+      status,
+      summary: {
+        intent: `Execute the public-safe JSON ${operation} operation.`,
+        input: 'Validated JSON request structure; raw JSON content and credentials were excluded.',
+        output: `JSON operation returned HTTP ${httpStatus}.`,
+        evidence: `Trace-linked ${operation} API response metadata.`,
+      },
+    }))
+    return 'queued'
+  } catch {
+    return 'degraded'
+  }
+}
+
 export function apiResponse<T>(
   data: T,
   status = 200,
@@ -58,6 +79,7 @@ export function apiResponse<T>(
   operation = 'json_api',
 ): NextResponse<ApiOk<T>> {
   const trace = createTraceContext(headers, operation)
+  const traceExport = scheduleJsonSpan(trace, operation, 'completed', status)
   return NextResponse.json(
     {
       ok: true,
@@ -77,6 +99,7 @@ export function apiResponse<T>(
       headers: {
         ...corsHeaders(),
         ...traceHeaders(trace),
+        'X-PlatPhorm-Trace-Export': traceExport,
       },
     },
   )
@@ -132,6 +155,7 @@ export function apiError(
   operation = 'json_api_error',
 ): NextResponse<ApiFailure> {
   const trace = createTraceContext(headers, operation)
+  const traceExport = scheduleJsonSpan(trace, operation, 'failed', status)
   return NextResponse.json(
     {
       ok: false,
@@ -155,6 +179,7 @@ export function apiError(
       headers: {
         ...corsHeaders(),
         ...traceHeaders(trace),
+        'X-PlatPhorm-Trace-Export': traceExport,
       },
     },
   )
