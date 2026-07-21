@@ -53,18 +53,20 @@ function createMeta(requestId?: string, headers?: Headers, operation = 'json_api
 function scheduleJsonSpan(trace: TraceContext, operation: string, status: 'completed' | 'failed', httpStatus: number) {
   if (!process.env.PLATPHORM_API_KEY) return 'disabled'
   try {
-    after(() => exportJsonSpan({
-      context: trace,
-      operation,
-      startTime: new Date().toISOString(),
-      status,
-      summary: {
-        intent: `Execute the public-safe JSON ${operation} operation.`,
-        input: 'Validated JSON request structure; raw JSON content and credentials were excluded.',
-        output: `JSON operation returned HTTP ${httpStatus}.`,
-        evidence: `Trace-linked ${operation} API response metadata.`,
-      },
-    }))
+    after(async () => {
+      await exportJsonSpan({
+        context: trace,
+        operation,
+        startTime: new Date().toISOString(),
+        status,
+        summary: {
+          intent: `Execute the public-safe JSON ${operation} operation.`,
+          input: 'Validated JSON request structure; raw JSON content and credentials were excluded.',
+          output: `JSON operation returned HTTP ${httpStatus}.`,
+          evidence: `Trace-linked ${operation} API response metadata.`,
+        },
+      })
+    })
     return 'queued'
   } catch {
     return 'degraded'
