@@ -50,14 +50,23 @@ function createMeta(requestId?: string, headers?: Headers, operation = 'json_api
   }
 }
 
-function scheduleJsonSpan(trace: TraceContext, operation: string, status: 'completed' | 'failed', httpStatus: number) {
+export function requestStartedAt(headers?: Headers): string {
+  const candidate = headers?.get('x-platphorm-request-started-at')
+  const parsed = candidate ? Date.parse(candidate) : Number.NaN
+  const now = Date.now()
+  return Number.isFinite(parsed) && parsed <= now + 1_000 && parsed >= now - 10 * 60_000
+    ? new Date(parsed).toISOString()
+    : new Date(now).toISOString()
+}
+
+function scheduleJsonSpan(trace: TraceContext, operation: string, status: 'completed' | 'failed', httpStatus: number, startTime: string) {
   if (!process.env.PLATPHORM_API_KEY) return 'disabled'
   try {
     after(async () => {
       await exportJsonSpan({
         context: trace,
         operation,
-        startTime: new Date().toISOString(),
+        startTime,
         status,
         summary: {
           intent: `Execute the public-safe JSON ${operation} operation.`,
@@ -81,7 +90,7 @@ export function apiResponse<T>(
   operation = 'json_api',
 ): NextResponse<ApiOk<T>> {
   const trace = createTraceContext(headers, operation)
-  const traceExport = scheduleJsonSpan(trace, operation, 'completed', status)
+  const traceExport = scheduleJsonSpan(trace, operation, 'completed', status, requestStartedAt(headers))
   return NextResponse.json(
     {
       ok: true,
@@ -157,7 +166,7 @@ export function apiError(
   operation = 'json_api_error',
 ): NextResponse<ApiFailure> {
   const trace = createTraceContext(headers, operation)
-  const traceExport = scheduleJsonSpan(trace, operation, 'failed', status)
+  const traceExport = scheduleJsonSpan(trace, operation, 'failed', status, requestStartedAt(headers))
   return NextResponse.json(
     {
       ok: false,

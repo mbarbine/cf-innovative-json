@@ -194,6 +194,7 @@ export async function exportJsonSpan(input: {
     traceId: input.context.traceId,
     spanId: input.context.spanId,
     parentSpanId: input.context.parentSpanId,
+    externalParent: Boolean(input.context.parentSpanId),
     name: `JSON ${input.operation}`,
     kind: 'SERVER',
     sourceSite: SERVICE_DOMAIN,
@@ -207,19 +208,41 @@ export async function exportJsonSpan(input: {
     metadata,
   }
   const started = await emitJsonLifecycle('/api/v1/spans/start', apiKey, input.context, common)
+  const endTime = new Date().toISOString()
+  const childSpanId = randomHex(8)
+  const childCommon = {
+    ...common,
+    spanId: childSpanId,
+    parentSpanId: input.context.spanId,
+    externalParent: false,
+    name: `Execute JSON ${input.operation}`,
+    kind: 'INTERNAL',
+    apiOperation: `${input.operation}.execute`,
+    metadata: {
+      ...metadata,
+      operationFingerprint: `json:${input.operation}:execute:v1`,
+    },
+  }
+  const childStarted = started && await emitJsonLifecycle('/api/v1/spans/start', apiKey, input.context, childCommon)
+  const childTerminal = childStarted && await emitJsonLifecycle(
+    input.status === 'failed' ? '/api/v1/spans/fail' : '/api/v1/spans/complete',
+    apiKey,
+    input.context,
+    { ...childCommon, endTime },
+  )
   const terminal = await emitJsonLifecycle(
     input.status === 'failed' ? '/api/v1/spans/fail' : '/api/v1/spans/complete',
     apiKey,
     input.context,
     {
       ...common,
-      endTime: new Date().toISOString(),
+      endTime,
       ...(input.status === 'failed' ? { errorCode: 'JSON_OPERATION_FAILED', errorMessage: `JSON ${input.operation} failed.` } : {}),
     },
   )
   return {
     traceId: input.context.traceId,
     spanId: input.context.spanId,
-    status: started && terminal ? 'connected' as const : 'degraded' as const,
+    status: started && childStarted && childTerminal && terminal ? 'connected' as const : 'degraded' as const,
   }
 }
