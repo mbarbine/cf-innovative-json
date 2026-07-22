@@ -141,6 +141,7 @@ const SECURITY_CONTROL_LABELS: Record<SecurityControlTone, string> = {
 }
 
 const SECURITY_CONTROL_ORDER: SecurityControlTone[] = ['waf', 'bots', 'apiGateway', 'rateLimit']
+const SECURITY_PRESENTATION_MIN_SCALE = 0.3
 
 function getNodeStyle(node: JsonNode) {
   const tone = getSecurityControlTone(node.path)
@@ -654,6 +655,7 @@ export const GraphView = memo(function GraphView({
   const [containerSize, setContainerSize] = useState({ width: 800, height: 600 })
   const [showMiniMap, setShowMiniMap] = useState(true)
   const [copiedPath, setCopiedPath] = useState<string | null>(null)
+  const initializedSecuritySnapshotRef = useRef<string | null>(null)
 
   // Measure container
   useEffect(() => {
@@ -688,6 +690,31 @@ export const GraphView = memo(function GraphView({
     const node = layout.nodes.find(({ node }) => node.key === 'capturedAt')?.node
     return node?.type === 'string' ? String(node.value) : null
   }, [layout])
+
+  // Keep the live demo readable by folding only the dense API operation list.
+  // The control categories remain expanded and the array is still one click away.
+  useEffect(() => {
+    if (!tree || securityLegend.length === 0) return
+    const snapshotKey = capturedAt || tree.id
+    if (initializedSecuritySnapshotRef.current === snapshotKey) return
+
+    const denseControlArrays = new Set<string>()
+    const pending = [tree]
+    while (pending.length > 0) {
+      const node = pending.pop()!
+      if (
+        node.type === 'array' &&
+        (node.children?.length ?? 0) > 5 &&
+        getSecurityControlTone(node.path) === 'apiGateway'
+      ) {
+        denseControlArrays.add(node.id)
+      }
+      pending.push(...(node.children ?? []))
+    }
+
+    initializedSecuritySnapshotRef.current = snapshotKey
+    if (denseControlArrays.size > 0) setCollapsedNodes(denseControlArrays)
+  }, [capturedAt, securityLegend.length, tree])
 
   // Find nodes on path to selected
   const pathNodeIds = useMemo(() => {
@@ -822,10 +849,25 @@ export const GraphView = memo(function GraphView({
   // Auto-fit on tree change
   useEffect(() => {
     if (layout && containerSize.width > 0 && containerSize.height > 0) {
-      const timer = setTimeout(fitToScreen, 50)
+      const timer = setTimeout(() => {
+        const padding = 80
+        const scaleX = (containerSize.width - padding * 2) / layout.width
+        const scaleY = (containerSize.height - padding * 2) / layout.height
+        const fittedScale = Math.min(scaleX, scaleY, 1.2)
+
+        if (securityLegend.length > 0 && fittedScale < SECURITY_PRESENTATION_MIN_SCALE) {
+          setTransform({
+            x: (containerSize.width - layout.width * SECURITY_PRESENTATION_MIN_SCALE) / 2,
+            y: (containerSize.height - layout.height * SECURITY_PRESENTATION_MIN_SCALE) / 2,
+            scale: SECURITY_PRESENTATION_MIN_SCALE,
+          })
+        } else {
+          fitToScreen()
+        }
+      }, 50)
       return () => clearTimeout(timer)
     }
-  }, [tree?.id, layout, containerSize.width, containerSize.height, fitToScreen])
+  }, [tree?.id, layout, containerSize.width, containerSize.height, fitToScreen, securityLegend.length])
 
   useEffect(() => {
     const handleGlobalMouseUp = () => setIsDragging(false)
