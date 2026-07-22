@@ -78,6 +78,7 @@ describe('Phase 1 JSON API contract', () => {
     const response = await openapiGet()
     const data = await response.json()
     expect(data.servers[0].url).toBe('https://json.platphormnews.com')
+    expect(data['x-platphorm'].routeCount).toBe(Object.keys(data.paths).length)
     expect(JSON.stringify(data)).not.toContain('your_api_key')
     expect(JSON.stringify(data)).toContain('PLATPHORM_API_KEY')
   })
