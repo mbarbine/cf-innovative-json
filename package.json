@@ -11,8 +11,8 @@
     "test": "vitest run",
     "cf:build": "opennextjs-cloudflare build",
     "cf:preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
-    "cf:upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
-    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy -- --keep-vars",
+    "cf:upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload --env=\"\"",
+    "cf:deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy --env=\"\" -- --keep-vars",
     "cf:typegen": "wrangler types --include-runtime false --env-interface CloudflareEnv cloudflare-env.d.ts",
     "smoke:cloudflare": "node scripts/smoke-cloudflare.mjs",
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm build && pnpm cf:build"

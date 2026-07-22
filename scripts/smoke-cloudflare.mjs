@@ -66,6 +66,9 @@ const getRoutes = [
   '/api/v1/schema-pack',
   '/api/v1/jsonld',
   '/api/mcp',
+  '/api/v1/mcp',
+  '/api/mcp/register',
+  '/.well-known/platphorm.json',
 ]
 
 for (const path of getRoutes) {
@@ -81,6 +84,7 @@ const posts = [
   ['/api/v1/minify', { json: '{\n  "hello": "world"\n}' }],
   ['/api/v1/validate', { json: '{"hello":"world"}' }],
   ['/api/v1/stats', { json: '{"nested":{"items":[1,2,3]}}' }],
+  ['/api/v1/diff', { source: '{"status":"before"}', target: '{"status":"after"}' }],
   ['/api/v1/schema/validate', {
     schemaSlug: 'realm',
     json: JSON.stringify({
