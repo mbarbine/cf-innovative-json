@@ -282,8 +282,6 @@ export const openApiSpec = {
   },
 }
 
-openApiSpec['x-platphorm'].routeCount = Object.keys(openApiSpec.paths).length
-
 function healthPath() {
   return {
     get: {
