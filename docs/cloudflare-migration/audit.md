@@ -27,7 +27,7 @@ The existing application-level `Map` rate limiter is isolate-local and therefore
 | Middleware/proxy | Removed from the canary; Wrangler deploys OpenNext directly and Next response headers enforce noindex |
 | Dynamic Next routes | Must pass Ubuntu `workerd` smoke before deployment |
 | Node crypto | Supported through `nodejs_compat` |
-| AJV schema compilation | Bundled, trusted schemas compile once during isolate startup; request data is never evaluated as code |
+| AJV schema compilation | Bundled, trusted schemas compile once during isolate startup under the pinned compatibility date; request data is never evaluated as code |
 | Filesystem persistence | Not used for runtime state |
 | In-memory rate limits | Best-effort only; not a perimeter guarantee |
 | SSE | Smoke test reads the first event and performs a bounded abort |

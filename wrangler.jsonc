@@ -3,7 +3,7 @@
   "name": "platphorm-json-canary",
   "main": ".open-next/worker.js",
   "compatibility_date": "2026-07-22",
-  "compatibility_flags": ["nodejs_compat", "allow_eval_during_startup"],
+  "compatibility_flags": ["nodejs_compat"],
   "assets": {
     "directory": ".open-next/assets",
     "binding": "ASSETS"
