@@ -230,7 +230,7 @@ export async function exportJsonSpan(input: {
     input.context,
     { ...childCommon, endTime },
   )
-  const terminal = await emitJsonLifecycle(
+  const terminal = started && await emitJsonLifecycle(
     input.status === 'failed' ? '/api/v1/spans/fail' : '/api/v1/spans/complete',
     apiKey,
     input.context,
