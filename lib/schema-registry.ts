@@ -1,5 +1,6 @@
 import Ajv2020 from 'ajv/dist/2020'
 import addFormats from 'ajv-formats'
+import type { ValidateFunction } from 'ajv'
 import { BASE_URL, SCHEMA_FILES, findSchemaBySlug, type SchemaFile } from './platform'
 import { validateJsonString } from './api-utils'
 import agentSchema from '@/public/schemas/json/agent.schema.json'
@@ -159,6 +160,32 @@ function createAjv() {
   return ajv
 }
 
+function createValidatorRegistry(): Map<string, ValidateFunction> {
+  const ajv = createAjv()
+  const validators = new Map<string, ValidateFunction>()
+
+  for (const record of listSchemas()) {
+    if (!record.schema || record.status !== 'active') continue
+    const schema = schemaWithSharedDefs(record.schema) as Record<string, unknown>
+
+    try {
+      const validate = typeof schema.$id === 'string'
+        ? ajv.getSchema(schema.$id) || ajv.compile(schema)
+        : ajv.compile(schema)
+      validators.set(record.slug, validate)
+    } catch (error) {
+      console.error(`Unable to compile bundled schema ${record.slug}`, error)
+    }
+  }
+
+  return validators
+}
+
+// Cloudflare permits trusted code generation only during isolate startup. AJV
+// compiles the repository-owned schemas once here; requests only execute the
+// resulting validator functions and never evaluate request-controlled source.
+const VALIDATORS = createValidatorRegistry()
+
 export function validateJsonAgainstSchema(json: string, schemaSlug: string): SchemaValidationResult {
   const jsonValidation = validateJsonString(json)
   const record = getSchema(schemaSlug)
@@ -197,9 +224,21 @@ export function validateJsonAgainstSchema(json: string, schemaSlug: string): Sch
     }
   }
 
-  const ajv = createAjv()
-  const schema = schemaWithSharedDefs(record.schema) as Record<string, unknown>
-  const validate = typeof schema.$id === 'string' ? ajv.getSchema(schema.$id) || ajv.compile(schema) : ajv.compile(schema)
+  const validate = VALIDATORS.get(record.slug)
+  if (!validate) {
+    return {
+      valid: false,
+      schemaSlug,
+      schemaTitle: record.title,
+      validator: 'ajv-draft-2020-12',
+      errors: [{
+        path: '$',
+        message: 'Schema validator is unavailable in this runtime.',
+        keyword: 'validator_unavailable',
+        schemaPath: '#',
+      }],
+    }
+  }
   const valid = validate(jsonValidation.parsed) === true
 
   return {

@@ -26,6 +26,14 @@ function normalized(value) {
     .map(([key, child]) => [key, normalized(child)]))
 }
 
+function normalizedForParity(value, path) {
+  const result = normalized(value)
+  if (path === '/openapi.json' && result?.['x-platphorm']) {
+    delete result['x-platphorm'].routeCount
+  }
+  return result
+}
+
 async function timedFetch(url, init = {}) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
@@ -210,7 +218,10 @@ if (mode !== 'local' && productionUrl !== canaryUrl) {
         expectStatus(productionUrl, path),
       ])
       const [canaryBody, productionBody] = await Promise.all([canaryResponse.json(), productionResponse.json()])
-      assert(JSON.stringify(normalized(canaryBody)) === JSON.stringify(normalized(productionBody)), `${path} differs after dynamic-field normalization`)
+      if (path === '/openapi.json') {
+        assert(canaryBody?.['x-platphorm']?.routeCount === Object.keys(canaryBody?.paths || {}).length, 'canary OpenAPI routeCount is not self-consistent')
+      }
+      assert(JSON.stringify(normalizedForParity(canaryBody, path)) === JSON.stringify(normalizedForParity(productionBody, path)), `${path} differs after dynamic-field normalization`)
       return { status: 'equal-after-normalization' }
     })
   }
