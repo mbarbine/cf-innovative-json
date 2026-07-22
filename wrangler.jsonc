@@ -1,0 +1,35 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "platphorm-json-canary",
+  "main": "cloudflare/worker.ts",
+  "compatibility_date": "2026-07-22",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  },
+  "workers_dev": true,
+  "keep_vars": true,
+  "vars": {
+    "DEPLOYMENT_PROVIDER": "cloudflare",
+    "DEPLOYMENT_ENVIRONMENT": "canary",
+    "PLATPHORM_CANARY": "true",
+    "NEXT_PUBLIC_APP_URL": "https://json.innovativefuturesolutions.com",
+    "NEXT_PUBLIC_CANONICAL_URL": "https://json.platphormnews.com",
+    "PLATPHORM_TRACE_BASE_URL": "https://trace.platphormnews.com",
+    "PLATPHORM_REQUIRE_API_KEY": "false"
+  },
+  "env": {
+    "custom-domain": {
+      "routes": [
+        {
+          "pattern": "json.innovativefuturesolutions.com",
+          "custom_domain": true
+        }
+      ]
+    }
+  }
+}

@@ -277,7 +277,8 @@ export function buildTrustPolicy() {
     schemaRegistryPolicy: 'Public bundled schemas are readable. Registry mutation is future protected.',
     jsonDataExposurePolicy: 'Pasted JSON remains browser-local unless sent to a public-safe API operation selected by the user.',
     tracePropagation: 'W3C traceparent/tracestate and safe PlatPhorm trace headers are accepted and emitted.',
-    vercelMetadata: 'Safe Vercel headers are captured in response metadata with IP values hashed.',
+    vercelMetadata: 'The backward-compatible Vercel metadata field remains available, with IP values hashed.',
+    platformMetadata: 'Provider-neutral request metadata captures only nonsecret operational fields and hashed IP-derived values.',
     backendModelScaffolding: getModelAdapterStatus(),
     securityContact: 'security@platphormnews.com',
   }

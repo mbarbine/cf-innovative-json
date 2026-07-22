@@ -22,6 +22,10 @@ import {
   Info
 } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
+import {
+  getSecurityControlTone,
+  type SecurityControlTone,
+} from '@/lib/security-controls'
 
 interface GraphViewProps {
   tree: JsonNode | null
@@ -96,6 +100,51 @@ const TYPE_STYLES = {
     fill: 'rgb(236, 72, 153)',
     fillBg: 'rgba(236, 72, 153, 0.1)'
   },
+}
+
+const SECURITY_CONTROL_STYLES: Record<SecurityControlTone, typeof TYPE_STYLES.string> = {
+  waf: {
+    bg: 'bg-rose-500/10',
+    border: 'border-rose-500/50',
+    text: 'text-rose-500',
+    fill: 'rgb(244, 63, 94)',
+    fillBg: 'rgba(244, 63, 94, 0.12)',
+  },
+  bots: {
+    bg: 'bg-cyan-500/10',
+    border: 'border-cyan-500/50',
+    text: 'text-cyan-500',
+    fill: 'rgb(6, 182, 212)',
+    fillBg: 'rgba(6, 182, 212, 0.12)',
+  },
+  apiGateway: {
+    bg: 'bg-indigo-500/10',
+    border: 'border-indigo-500/50',
+    text: 'text-indigo-500',
+    fill: 'rgb(99, 102, 241)',
+    fillBg: 'rgba(99, 102, 241, 0.12)',
+  },
+  rateLimit: {
+    bg: 'bg-orange-500/10',
+    border: 'border-orange-500/50',
+    text: 'text-orange-500',
+    fill: 'rgb(249, 115, 22)',
+    fillBg: 'rgba(249, 115, 22, 0.12)',
+  },
+}
+
+const SECURITY_CONTROL_LABELS: Record<SecurityControlTone, string> = {
+  waf: 'WAF',
+  bots: 'Bot control',
+  apiGateway: 'API endpoints',
+  rateLimit: 'Rate limit',
+}
+
+const SECURITY_CONTROL_ORDER: SecurityControlTone[] = ['waf', 'bots', 'apiGateway', 'rateLimit']
+
+function getNodeStyle(node: JsonNode) {
+  const tone = getSecurityControlTone(node.path)
+  return tone ? SECURITY_CONTROL_STYLES[tone] : TYPE_STYLES[node.type]
 }
 
 function calculateLayout(
@@ -189,7 +238,9 @@ const GraphNode = memo(function GraphNode({
 }) {
   const { node, x, y, width, height, isCollapsed } = posNode
   const hasChildren = node.children && node.children.length > 0
-  const style = TYPE_STYLES[node.type]
+  const controlTone = getSecurityControlTone(node.path)
+  const style = getNodeStyle(node)
+  const isControlRoot = controlTone === node.key
   const [copied, setCopied] = useState(false)
   
   const displayValue = useMemo(() => {
@@ -305,6 +356,16 @@ const GraphNode = memo(function GraphNode({
         strokeWidth={isSelected ? 2 : 1}
         className="transition-all duration-150"
       />
+
+      {controlTone && (
+        <rect
+          width={isControlRoot ? 6 : 3}
+          height={height}
+          rx={isControlRoot ? 3 : 1.5}
+          fill={style.fill}
+          opacity={isControlRoot ? 1 : 0.65}
+        />
+      )}
       
       {/* Collapse/Expand toggle */}
       {hasChildren && showInteractiveElements && (
@@ -401,8 +462,21 @@ const GraphNode = memo(function GraphNode({
         {node.type}
       </text>
 
+      {isControlRoot && controlTone && (
+        <text
+          x={width - 10}
+          y={height - 5}
+          textAnchor="end"
+          className="text-[7px] font-semibold uppercase tracking-wide"
+          fill={isSelected ? 'rgba(255,255,255,0.9)' : style.fill}
+          style={{ fontFamily: 'var(--font-mono)' }}
+        >
+          {SECURITY_CONTROL_LABELS[controlTone]}
+        </text>
+      )}
+
       {/* Tooltip trigger overlay - invisible but captures hover for tooltip */}
-      <title>{`${node.key}: ${fullValue}\nPath: ${jsonPath}\nType: ${node.type}${hasChildren ? `\nChildren: ${node.children!.length}` : ''}`}</title>
+      <title>{`${node.key}: ${fullValue}\nPath: ${jsonPath}\nType: ${node.type}${controlTone ? `\nSecurity control: ${SECURITY_CONTROL_LABELS[controlTone]}` : ''}${hasChildren ? `\nChildren: ${node.children!.length}` : ''}`}</title>
     </g>
   )
 })
@@ -417,7 +491,7 @@ function GraphEdge({ edge, isHighlighted }: { edge: Edge; isHighlighted: boolean
   const controlOffset = Math.min((endX - startX) * 0.5, 50)
   const pathD = `M ${startX} ${startY} C ${startX + controlOffset} ${startY}, ${endX - controlOffset} ${endY}, ${endX} ${endY}`
   
-  const fromStyle = TYPE_STYLES[edge.from.node.type]
+  const fromStyle = getNodeStyle(edge.from.node)
   
   return (
     <g>
@@ -598,6 +672,22 @@ export const GraphView = memo(function GraphView({
     if (!tree) return null
     return calculateLayout(tree, collapsedNodes)
   }, [tree, collapsedNodes])
+
+  const securityLegend = useMemo(() => {
+    if (!layout) return []
+    const present = new Set(
+      layout.nodes
+        .map(({ node }) => getSecurityControlTone(node.path))
+        .filter((tone): tone is SecurityControlTone => tone !== null),
+    )
+    return SECURITY_CONTROL_ORDER.filter(tone => present.has(tone))
+  }, [layout])
+
+  const capturedAt = useMemo(() => {
+    if (!layout) return null
+    const node = layout.nodes.find(({ node }) => node.key === 'capturedAt')?.node
+    return node?.type === 'string' ? String(node.value) : null
+  }, [layout])
 
   // Find nodes on path to selected
   const pathNodeIds = useMemo(() => {
@@ -829,6 +919,33 @@ export const GraphView = memo(function GraphView({
             ))}
           </g>
         </svg>
+
+        {securityLegend.length > 0 && (
+          <div className="absolute top-4 left-4 z-20 max-w-sm rounded-xl border border-border bg-background/95 p-3 shadow-xl backdrop-blur-md">
+            <div className="flex items-center gap-2">
+              <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.65)]" />
+              <p className="text-xs font-semibold text-foreground">Cloudflare Security Control Graph</p>
+            </div>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Live server-side snapshot with semantic control highlighting
+              {capturedAt ? ` · ${new Date(capturedAt).toLocaleString()}` : ''}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Security control legend">
+              {securityLegend.map(tone => (
+                <span
+                  key={tone}
+                  className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/50 px-2 py-1 text-[9px] font-medium text-foreground"
+                >
+                  <span
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: SECURITY_CONTROL_STYLES[tone].fill }}
+                  />
+                  {SECURITY_CONTROL_LABELS[tone]}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Copied notification */}
         {copiedPath && (

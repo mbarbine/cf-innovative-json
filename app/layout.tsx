@@ -2,7 +2,11 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
+import { getDeploymentConfig, getSeoPolicy, shouldRenderVercelAnalytics } from '@/lib/deployment'
 import './globals.css'
+
+const deployment = getDeploymentConfig()
+const seo = getSeoPolicy()
 
 const geistSans = Geist({ 
   subsets: ["latin"],
@@ -14,7 +18,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'),
+  metadataBase: new URL(seo.canonicalUrl),
   title: {
     default: 'JSON Tree + PlatPhorm Schema Registry',
     template: '%s | JSON Tree + PlatPhorm Schema Registry'
@@ -56,11 +60,11 @@ export const metadata: Metadata = {
     creator: '@platphormnews',
   },
   robots: {
-    index: true,
-    follow: true,
+    index: seo.index,
+    follow: seo.follow,
     googleBot: {
-      index: true,
-      follow: true,
+      index: seo.index,
+      follow: seo.follow,
       'max-video-preview': -1,
       'max-image-preview': 'large',
       'max-snippet': -1,
@@ -75,7 +79,7 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.webmanifest',
   alternates: {
-    canonical: '/',
+    canonical: seo.canonicalUrl,
     types: {
       'application/rss+xml': '/feed.xml',
     },
@@ -111,7 +115,7 @@ export default function RootLayout({
               "name": "JSON Tree + PlatPhorm Schema Registry",
               "alternateName": "JSON Tree",
               "description": "Public JSON tree viewer, formatter, validator, schema validation tool, JSON-LD contract viewer, REST API, and MCP server.",
-              "url": process.env.NEXT_PUBLIC_APP_URL || "https://json.platphormnews.com",
+              "url": deployment.canonicalUrl,
               "applicationCategory": "DeveloperApplication",
               "operatingSystem": "Any",
               "version": "1.4.0",
@@ -166,7 +170,7 @@ export default function RootLayout({
         >
           {children}
         </ThemeProvider>
-        <Analytics />
+        {shouldRenderVercelAnalytics() ? <Analytics /> : null}
       </body>
     </html>
   )

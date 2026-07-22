@@ -1,6 +1,10 @@
 import { useSyncExternalStore, useCallback } from 'react'
 import type { JsonNode, ViewMode, TreeStats, SearchResult } from './types'
-import { parseJsonToTree, calculateStats, searchTree, resetNodeIdCounter } from './json-utils'
+import { parseJsonToTree, calculateStats, searchTree } from './json-utils'
+import {
+  DEFAULT_SECURITY_CONTROLS_JSON,
+  DEFAULT_SECURITY_CONTROLS_VIEW,
+} from './security-controls'
 
 interface JsonTreeState {
   rawJson: string
@@ -17,44 +21,9 @@ interface JsonTreeState {
   historyIndex: number
 }
 
-export const DEFAULT_JSON_SAMPLE = `{
-  "$schema": "https://json.platphormnews.com/schemas/json/realm.schema.json",
-  "sample": true,
-  "sampleLabel": "Public schema registry realm sample",
-  "product": "JSON Tree + PlatPhorm Schema Registry",
-  "purpose": "Inspect, format, validate, search, explore, and validate JSON against public PlatPhorm schema contracts.",
-  "realm": {
-    "id": 100,
-    "universe_id": 1,
-    "slug": "json-tree-schema-registry",
-    "name": "JSON Tree + PlatPhorm Schema Registry",
-    "realm_type": "utility-platform",
-    "primary_domain": "json.platphormnews.com",
-    "canonical_url": "https://json.platphormnews.com",
-    "environment": "production",
-    "visibility": "public",
-    "feature_tags": ["json", "schema-registry", "api", "mcp", "llms"],
-    "environment_tags": ["production"],
-    "governance_tags": ["public", "phase-1"]
-  },
-  "publicAccess": {
-    "editor": "public-safe",
-    "localDrafts": "browser IndexedDB only",
-    "schemaBrowsing": "public-safe",
-    "futureProtectedActions": "PLATPHORM_API_KEY when enabled"
-  },
-  "schemaFiles": [
-    "/schemas/json/platphorm-universal-schema-pack.json",
-    "/schemas/json/core.schema.json",
-    "/schemas/json/realm.schema.json",
-    "/schemas/json/item.schema.json",
-    "/schemas/json/observability.schema.json",
-    "/schemas/json/agent.schema.json"
-  ]
-}`
+export const DEFAULT_JSON_SAMPLE = DEFAULT_SECURITY_CONTROLS_JSON
 
 function createInitialState(): JsonTreeState {
-  resetNodeIdCounter()
   let tree: JsonNode | null = null
   let stats: TreeStats | null = null
   let isValid = false
@@ -73,7 +42,7 @@ function createInitialState(): JsonTreeState {
     rawJson: DEFAULT_JSON_SAMPLE,
     tree,
     stats,
-    viewMode: 'tree',
+    viewMode: DEFAULT_SECURITY_CONTROLS_VIEW,
     searchQuery: '',
     searchResults: [],
     selectedNodeId: null,
@@ -113,7 +82,6 @@ function subscribe(listener: () => void): () => void {
 
 // Actions
 export function setRawJson(json: string, addToHistory = true) {
-  resetNodeIdCounter()
   let tree: JsonNode | null = null
   let stats: TreeStats | null = null
   let isValid = false

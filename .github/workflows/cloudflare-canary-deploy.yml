@@ -1,0 +1,122 @@
+name: Deploy Cloudflare canary
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit_sha:
+        description: Exact reviewed commit SHA to deploy
+        required: true
+        type: string
+      attach_custom_domain:
+        description: Attach the reviewed custom hostname after workers.dev smoke passes
+        required: true
+        default: false
+        type: boolean
+      confirmation_hostname:
+        description: Type json.innovativefuturesolutions.com
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-json-canary
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: cloudflare-canary
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      DEPLOYMENT_PROVIDER: cloudflare
+      DEPLOYMENT_ENVIRONMENT: canary
+      PLATPHORM_CANARY: "true"
+      NEXT_PUBLIC_APP_URL: https://json.innovativefuturesolutions.com
+      NEXT_PUBLIC_CANONICAL_URL: https://json.platphormnews.com
+      PLATPHORM_TRACE_BASE_URL: https://trace.platphormnews.com
+      PLATPHORM_REQUIRE_API_KEY: "false"
+    steps:
+      - name: Validate promotion confirmation
+        shell: bash
+        run: |
+          test "${{ inputs.confirmation_hostname }}" = "json.innovativefuturesolutions.com" || {
+            echo "Hostname confirmation does not match the reviewed canary hostname."
+            exit 1
+          }
+
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.commit_sha }}
+          fetch-depth: 0
+
+      - name: Confirm exact commit
+        run: test "$(git rev-parse HEAD)" = "${{ inputs.commit_sha }}"
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install pinned pnpm
+        run: corepack enable && corepack prepare pnpm@10.33.2 --activate
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+
+      - name: Record previous known-good deployment
+        run: |
+          mkdir -p .wrangler
+          pnpm exec wrangler deployments list --name platphorm-json-canary --json > .wrangler/previous-deployments.json || echo '[]' > .wrangler/previous-deployments.json
+
+      - name: Build reviewed Worker once
+        run: pnpm cf:build
+
+      - name: Deploy workers.dev canary
+        id: deploy
+        uses: cloudflare/wrangler-action@v4
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: 4.113.0
+          command: deploy --env="" --keep-vars
+
+      - name: Capture deployment identity
+        run: |
+          pnpm exec wrangler deployments list --name platphorm-json-canary --json > .wrangler/current-deployments.json
+          pnpm exec wrangler versions list --name platphorm-json-canary --json > .wrangler/current-versions.json
+
+      - name: Smoke workers.dev
+        env:
+          CLOUDFLARE_CANARY_URL: ${{ steps.deploy.outputs.deployment-url }}
+          SMOKE_REPORT_PATH: .wrangler/workers-dev-smoke-report.json
+        run: node scripts/smoke-cloudflare.mjs
+
+      - name: Attach exact custom domain
+        if: ${{ inputs.attach_custom_domain }}
+        run: pnpm exec wrangler triggers deploy --env custom-domain --name platphorm-json-canary
+
+      - name: Smoke custom domain
+        if: ${{ inputs.attach_custom_domain }}
+        env:
+          CLOUDFLARE_CANARY_URL: https://json.innovativefuturesolutions.com
+          SMOKE_REPORT_PATH: .wrangler/custom-domain-smoke-report.json
+        run: node scripts/smoke-cloudflare.mjs
+
+      - name: Publish redacted deployment summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "## PlatPhorm JSON Cloudflare canary"
+            echo "- Requested commit: \`${{ inputs.commit_sha }}\`"
+            echo "- Worker: \`platphorm-json-canary\`"
+            echo "- workers.dev smoke report generated: $([ -f .wrangler/workers-dev-smoke-report.json ] && echo yes || echo no)"
+            echo "- Custom domain requested: \`${{ inputs.attach_custom_domain }}\`"
+            echo "- Previous Cloudflare deployment retained for rollback."
+          } >> "$GITHUB_STEP_SUMMARY"

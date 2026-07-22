@@ -1,19 +1,9 @@
 import type { JsonNode, JsonValueType, TreeStats, SearchResult, DiffResult } from './types'
 
-let nodeIdCounter = 0
-
 export function getValueType(value: unknown): JsonValueType {
   if (value === null) return 'null'
   if (Array.isArray(value)) return 'array'
   return typeof value as JsonValueType
-}
-
-export function generateNodeId(): string {
-  return `node-${++nodeIdCounter}`
-}
-
-export function resetNodeIdCounter(): void {
-  nodeIdCounter = 0
 }
 
 export function parseJsonToTree(
@@ -22,28 +12,34 @@ export function parseJsonToTree(
   path: string[] = [],
   depth: number = 0
 ): JsonNode {
-  const type = getValueType(value)
-  const node: JsonNode = {
-    id: generateNodeId(),
-    key,
-    value,
-    type,
-    path: [...path, key],
-    depth,
-    isExpanded: depth < 2 // Auto-expand first 2 levels
+  let nodeIdCounter = 0
+
+  function visit(currentValue: unknown, currentKey: string, currentPath: string[], currentDepth: number): JsonNode {
+    const type = getValueType(currentValue)
+    const node: JsonNode = {
+      id: `node-${++nodeIdCounter}`,
+      key: currentKey,
+      value: currentValue,
+      type,
+      path: [...currentPath, currentKey],
+      depth: currentDepth,
+      isExpanded: currentDepth < 2,
+    }
+
+    if (type === 'object' && currentValue !== null) {
+      node.children = Object.entries(currentValue as Record<string, unknown>).map(
+        ([childKey, childValue]) => visit(childValue, childKey, node.path, currentDepth + 1),
+      )
+    } else if (type === 'array') {
+      node.children = (currentValue as unknown[]).map((childValue, index) =>
+        visit(childValue, String(index), node.path, currentDepth + 1),
+      )
+    }
+
+    return node
   }
 
-  if (type === 'object' && value !== null) {
-    node.children = Object.entries(value as Record<string, unknown>).map(
-      ([k, v]) => parseJsonToTree(v, k, node.path, depth + 1)
-    )
-  } else if (type === 'array') {
-    node.children = (value as unknown[]).map((v, i) =>
-      parseJsonToTree(v, String(i), node.path, depth + 1)
-    )
-  }
-
-  return node
+  return visit(value, key, path, depth)
 }
 
 export function calculateStats(node: JsonNode): TreeStats {

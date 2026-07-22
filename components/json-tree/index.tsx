@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useCallback, useState } from 'react'
+import { useEffect, useCallback, useRef, useState } from 'react'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { useJsonTreeStore } from '@/lib/store'
 import { formatJson, minifyJson } from '@/lib/json-utils'
@@ -15,9 +15,14 @@ import { PathBreadcrumb } from './path-breadcrumb'
 import { DiffView } from './diff-view'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
-import { loadLocalJsonDraft, saveLocalJsonDraft } from '@/lib/local-drafts'
+import { saveLocalJsonDraft } from '@/lib/local-drafts'
+import type { SecurityControlsSnapshot } from '@/lib/security-controls'
 
-export function JsonTree() {
+interface JsonTreeProps {
+  initialSecurityControls: SecurityControlsSnapshot
+}
+
+export function JsonTree({ initialSecurityControls }: JsonTreeProps) {
   const {
     rawJson,
     setRawJson,
@@ -46,8 +51,11 @@ export function JsonTree() {
   const [compareJson, setCompareJson] = useState('')
   const [selectedPath, setSelectedPath] = useState<string[]>([])
   const [draftReady, setDraftReady] = useState(false)
-  const [draftStatus, setDraftStatus] = useState('Local draft')
-  const [draftTooltip, setDraftTooltip] = useState('Drafts are stored in browser IndexedDB only. Nothing is saved server-side.')
+  const [draftStatus, setDraftStatus] = useState(
+    initialSecurityControls.live ? 'Live Cloudflare controls' : 'Security demo fallback',
+  )
+  const [draftTooltip, setDraftTooltip] = useState(initialSecurityControls.message)
+  const skipInitialPersistence = useRef(true)
   
   useEffect(() => {
     const shared = parseUrlParams()
@@ -62,31 +70,40 @@ export function JsonTree() {
       return
     }
 
-    loadLocalJsonDraft()
-      .then((draft) => {
-        if (draft?.content) {
-          setRawJson(draft.content)
-          setDraftStatus('Local draft')
-          setDraftTooltip(`Restored from browser IndexedDB. Last saved ${new Date(draft.updatedAt).toLocaleString()}.`)
-        } else {
-          setDraftStatus('Labeled sample')
-          setDraftTooltip('The editor starts with a labeled public sample. Edits are saved to browser IndexedDB only.')
-        }
-      })
-      .catch(() => {
-        setDraftStatus('Degraded storage')
-        setDraftTooltip('IndexedDB is unavailable. The editor still works, but local draft restore may not persist after reload.')
-      })
-      .finally(() => setDraftReady(true))
-  }, [setRawJson, setViewMode])
+    setRawJson(initialSecurityControls.json)
+    setViewMode('graph')
+    setDraftStatus(
+      initialSecurityControls.live ? 'Live Cloudflare controls' : 'Security demo fallback',
+    )
+    const capture = initialSecurityControls.capturedAt
+      ? ` Snapshot captured ${new Date(initialSecurityControls.capturedAt).toLocaleString()}.`
+      : ''
+    setDraftTooltip(
+      `${initialSecurityControls.message}${capture} Source: ${initialSecurityControls.sourceUrl}`,
+    )
+    setDraftReady(true)
+  }, [initialSecurityControls, setRawJson, setViewMode])
 
   useEffect(() => {
     if (!draftReady) return
+    if (skipInitialPersistence.current) {
+      skipInitialPersistence.current = false
+      return
+    }
     const timeout = window.setTimeout(() => {
       saveLocalJsonDraft(rawJson)
         .then((draft) => {
-          setDraftStatus('Local draft')
-          setDraftTooltip(`Saved locally in browser IndexedDB at ${new Date(draft.updatedAt).toLocaleTimeString()}. No server persistence is claimed.`)
+          const isUneditedLiveSnapshot = rawJson === initialSecurityControls.json
+          setDraftStatus(
+            isUneditedLiveSnapshot && initialSecurityControls.live
+              ? 'Live Cloudflare controls'
+              : 'Local draft',
+          )
+          setDraftTooltip(
+            isUneditedLiveSnapshot && initialSecurityControls.live
+              ? `${initialSecurityControls.message} Source: ${initialSecurityControls.sourceUrl}`
+              : `Saved locally in browser IndexedDB at ${new Date(draft.updatedAt).toLocaleTimeString()}. No server persistence is claimed.`,
+          )
         })
         .catch(() => {
           setDraftStatus('Degraded storage')
@@ -95,7 +112,7 @@ export function JsonTree() {
     }, 600)
 
     return () => window.clearTimeout(timeout)
-  }, [rawJson, draftReady])
+  }, [rawJson, draftReady, initialSecurityControls])
   
   // Update selected path when node is selected
   useEffect(() => {

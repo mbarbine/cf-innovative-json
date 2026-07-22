@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomUUID } from 'node:crypto'
 import { PLATFORM_SOURCE_SITE, SERVICE_DOMAIN } from './platform'
+import { getDeploymentConfig } from './deployment'
 
 export type TraceContext = {
   traceId: string
@@ -29,6 +30,19 @@ export type VercelRequestMetadata = {
   userAgent: string | null
   acceptLanguage: string | null
   host: string | null
+}
+
+export type PlatformRequestMetadata = {
+  provider: 'vercel' | 'cloudflare' | 'local'
+  runtime: 'vercel-functions' | 'cloudflare-workers' | 'nodejs'
+  environment: 'development' | 'preview' | 'production' | 'canary'
+  canary: boolean
+  rayId: string | null
+  country: string | null
+  host: string | null
+  protocol: string | null
+  userAgent: string | null
+  clientIpHash: string | null
 }
 
 function randomHex(bytes: number): string {
@@ -125,11 +139,29 @@ export function captureVercelRequestMetadata(headers: Headers): VercelRequestMet
   }
 }
 
+export function capturePlatformRequestMetadata(headers: Headers): PlatformRequestMetadata {
+  const deployment = getDeploymentConfig()
+  const clientIp = headers.get('cf-connecting-ip') || headers.get('x-forwarded-for')?.split(',')[0]?.trim() || headers.get('x-real-ip')
+  return {
+    provider: deployment.provider,
+    runtime: deployment.runtime,
+    environment: deployment.environment,
+    canary: deployment.canary,
+    rayId: headers.get('cf-ray'),
+    country: headers.get('cf-ipcountry') || headers.get('x-vercel-ip-country'),
+    host: headers.get('host') || headers.get('x-forwarded-host'),
+    protocol: headers.get('x-forwarded-proto'),
+    userAgent: headers.get('user-agent'),
+    clientIpHash: hashNullable(clientIp || null),
+  }
+}
+
 export function traceMetadata(headers?: Headers, operation = 'json_operation') {
   const trace = createTraceContext(headers, operation)
   return {
     trace,
     vercel: headers ? captureVercelRequestMetadata(headers) : null,
+    platform: headers ? capturePlatformRequestMetadata(headers) : null,
   }
 }
 

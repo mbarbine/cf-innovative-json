@@ -7,7 +7,7 @@ import {
   getClientIP,
   validateJsonString
 } from '@/lib/api-utils'
-import { parseJsonToTree, calculateStats, resetNodeIdCounter } from '@/lib/json-utils'
+import { parseJsonToTree, calculateStats } from '@/lib/json-utils'
 
 export async function POST(request: NextRequest) {
   const requestId = request.headers.get('x-request-id') || undefined
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json()
+    const body = await request.json() as { json?: unknown; options?: { includeStats?: boolean } }
     const { json, options = {} } = body
 
     if (!json || typeof json !== 'string') {
@@ -34,7 +34,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse to tree
-    resetNodeIdCounter()
     const tree = parseJsonToTree(validation.parsed)
     
     // Calculate stats if requested

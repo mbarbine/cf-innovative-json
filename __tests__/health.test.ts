@@ -3,7 +3,7 @@ import { GET } from '../app/api/health/route'
 
 describe('/api/health Endpoint', () => {
   it('should return 200 and standard health data', async () => {
-    const response = await GET()
+    const response = await GET(new Request('https://json.platphormnews.com/api/health') as never)
     expect(response.status).toBe(200)
 
     const data = await response.json()

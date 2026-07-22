@@ -1,4 +1,6 @@
-export const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'
+import { getDeploymentConfig } from './deployment'
+
+export const BASE_URL = getDeploymentConfig().canonicalUrl
 export const SERVICE_ID = 'json'
 export const SERVICE_DOMAIN = 'json.platphormnews.com'
 export const PRODUCT_NAME = 'JSON Tree + PlatPhorm Schema Registry'
@@ -7,7 +9,7 @@ export const APP_VERSION = '1.4.0'
 export const PLATFORM_SOURCE_SITE = 'json'
 
 export const TRUST_POLICY_LINE =
-  'Public-safe JSON editing, formatting, validation, schema browsing, schema validation, local non-sensitive JSON draft persistence, read-only MCP introspection, RSS/feed consumption, trusted-domain discovery, standard route compliance, Vercel metadata capture, backend model scaffolding, and trace-linked JSON operations are intentionally supported for public use. PLATPHORM_API_KEY support is scaffolded for future protected backend services, registry mutation, private validation, sync, test-triggering, reporting, administrative actions, and sensitive operations.'
+  'Public-safe JSON editing, formatting, validation, schema browsing, schema validation, local non-sensitive JSON draft persistence, read-only MCP introspection, RSS/feed consumption, trusted-domain discovery, standard route compliance, provider-neutral request metadata capture, backend model scaffolding, and trace-linked JSON operations are intentionally supported for public use. PLATPHORM_API_KEY support is scaffolded for future protected backend services, registry mutation, private validation, sync, test-triggering, reporting, administrative actions, and sensitive operations.'
 
 export type PlatformRoute = {
   path: string

@@ -1,7 +1,7 @@
 import { after, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { APP_VERSION } from './platform'
-import { createTraceContext, traceHeaders, captureVercelRequestMetadata, exportJsonSpan, isRudimentaryJsonOperation, type TraceContext } from './trace'
+import { createTraceContext, traceHeaders, capturePlatformRequestMetadata, captureVercelRequestMetadata, exportJsonSpan, isRudimentaryJsonOperation, type TraceContext } from './trace'
 
 export const API_VERSION = 'v1'
 export const MAX_JSON_BYTES = 1024 * 1024
@@ -14,6 +14,7 @@ type ApiMeta = {
   spanId: string
   traceUrl: string
   vercel?: ReturnType<typeof captureVercelRequestMetadata> | null
+  platform?: ReturnType<typeof capturePlatformRequestMetadata> | null
 }
 
 export type ApiOk<T> = {
@@ -47,6 +48,7 @@ function createMeta(requestId?: string, headers?: Headers, operation = 'json_api
     spanId: trace.spanId,
     traceUrl: trace.traceUrl,
     vercel: headers ? captureVercelRequestMetadata(headers) : null,
+    platform: headers ? capturePlatformRequestMetadata(headers) : null,
   }
 }
 
@@ -104,6 +106,7 @@ export function apiResponse<T>(
         spanId: trace.spanId,
         traceUrl: trace.traceUrl,
         vercel: headers ? captureVercelRequestMetadata(headers) : null,
+        platform: headers ? capturePlatformRequestMetadata(headers) : null,
       },
     },
     {
@@ -184,6 +187,7 @@ export function apiError(
         spanId: trace.spanId,
         traceUrl: trace.traceUrl,
         vercel: headers ? captureVercelRequestMetadata(headers) : null,
+        platform: headers ? capturePlatformRequestMetadata(headers) : null,
       },
     },
     {
@@ -197,6 +201,7 @@ export function apiError(
   )
 }
 
+// Best-effort process/isolate-local smoothing only. Cloudflare perimeter rules are authoritative for the canary.
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>()
 
 export function checkRateLimit(
@@ -233,8 +238,12 @@ export function corsHeaders() {
 }
 
 export function getClientIP(request: Request): string {
+  const cloudflare = request.headers.get('cf-connecting-ip')
+  if (cloudflare) return cloudflare.trim()
   const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) return forwarded.split(',')[0].trim()
+  const realIp = request.headers.get('x-real-ip')
+  if (realIp) return realIp.trim()
   return 'unknown'
 }
 

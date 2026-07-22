@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const body = await request.json()
+    const body = await request.json() as Record<string, unknown>
     const json = body?.json
     const schemaSlug = body?.schemaSlug || body?.schema || 'core'
 
