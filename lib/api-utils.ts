@@ -1,7 +1,7 @@
 import { after, NextResponse } from 'next/server'
 import { v4 as uuidv4 } from 'uuid'
 import { APP_VERSION } from './platform'
-import { createTraceContext, traceHeaders, captureVercelRequestMetadata, exportJsonSpan, type TraceContext } from './trace'
+import { createTraceContext, traceHeaders, captureVercelRequestMetadata, exportJsonSpan, isRudimentaryJsonOperation, type TraceContext } from './trace'
 
 export const API_VERSION = 'v1'
 export const MAX_JSON_BYTES = 1024 * 1024
@@ -60,6 +60,7 @@ export function requestStartedAt(headers?: Headers): string {
 }
 
 function scheduleJsonSpan(trace: TraceContext, operation: string, status: 'completed' | 'failed', httpStatus: number, startTime: string) {
+  if (status === 'completed' && isRudimentaryJsonOperation(operation)) return 'suppressed'
   if (!process.env.PLATPHORM_API_KEY) return 'disabled'
   try {
     after(async () => {

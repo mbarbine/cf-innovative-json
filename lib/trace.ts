@@ -142,6 +142,22 @@ export type JsonSpanSummary = {
 
 const TRACE_ORIGIN = process.env.PLATPHORM_TRACE_BASE_URL || 'https://trace.platphormnews.com'
 
+const RUDIMENTARY_JSON_OPERATIONS = new Set([
+  'get_schema',
+  'health',
+  'json_api',
+  'jsonld_artifacts',
+  'list_schemas',
+  'mcp_register',
+  'mcp_register_info',
+  'schema_pack',
+])
+
+/** Successful availability and registry reads are propagation checks, not user journeys. */
+export function isRudimentaryJsonOperation(operation: string): boolean {
+  return RUDIMENTARY_JSON_OPERATIONS.has(operation.trim().toLowerCase())
+}
+
 function safeSpanSummary(value: string) {
   return value.replace(/Bearer\s+\S+/gi, 'Bearer [REDACTED]').slice(0, 500)
 }
@@ -177,6 +193,9 @@ export async function exportJsonSpan(input: {
   status?: 'completed' | 'failed'
   summary: JsonSpanSummary
 }) {
+  if (input.status !== 'failed' && isRudimentaryJsonOperation(input.operation)) {
+    return { traceId: input.context.traceId, spanId: input.context.spanId, status: 'suppressed' as const }
+  }
   const apiKey = process.env.PLATPHORM_API_KEY || ''
   if (!apiKey) return { traceId: input.context.traceId, spanId: input.context.spanId, status: 'disabled' as const }
   const metadata = {

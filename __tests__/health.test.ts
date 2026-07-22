@@ -16,5 +16,6 @@ describe('/api/health Endpoint', () => {
     expect(data.data).toHaveProperty('discoveryCompliance')
     expect(data.data.auth.keyName).toBe('PLATPHORM_API_KEY')
     expect(data.meta).toHaveProperty('traceId')
+    expect(response.headers.get('X-PlatPhorm-Trace-Export')).toBe('suppressed')
   })
 })

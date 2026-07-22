@@ -170,7 +170,7 @@ ${V0_ROUTES.map((route) => `- ${route.method} ${BASE_URL}${route.path}: ${route.
 
 ## Trace And Trust
 
-- JSON/API/MCP operations emit W3C trace metadata in response headers and response meta.
+- JSON/API/MCP responses preserve W3C trace metadata. Only meaningful JSON actions and failures export span journeys; successful health, discovery, and registry reads are intentionally suppressed.
 - Trusted domain discovery defaults to *.platphormnews.com.
 - Trust policy: ${TRUST_POLICY_LINE}
 `
