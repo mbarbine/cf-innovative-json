@@ -8,7 +8,6 @@ const nextConfig = {
     unoptimized: true,
   },
   async headers() {
-    if (process.env.PLATPHORM_CANARY !== 'true') return []
     return [
       {
         source: '/:path*',

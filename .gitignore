@@ -15,4 +15,5 @@ node_modules/
 !.dev.vars.example
 .wrangler/
 smoke-report*.json
+output/playwright/
 tsconfig.tsbuildinfo

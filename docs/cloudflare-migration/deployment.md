@@ -8,7 +8,7 @@ Cloudflare Workers Builds is connected only to:
 - Production branch: `migration/cloudflare-json-canary`
 - Worker: `platphorm-json-canary`
 - Root directory: repository root
-- Build command: `pnpm cf:build`
+- Build command: `pnpm verify`
 - Deploy command: `pnpm exec wrangler deploy --env="" --keep-vars`
 - Non-production branch builds: disabled for this demo
 

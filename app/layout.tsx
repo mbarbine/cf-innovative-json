@@ -107,6 +107,15 @@ export default function RootLayout({
       <head>
         <link rel="alternate" type="application/rss+xml" title="JSON Tree RSS Feed" href="/feed.xml" />
         <script
+          dangerouslySetInnerHTML={{
+            // OpenNext's Cloudflare bundle preserves next-themes' esbuild name
+            // helper call in the inline bootstrap without emitting the helper.
+            // Function names are diagnostic only here, so a small identity shim
+            // keeps the theme bootstrap working without changing its behavior.
+            __html: 'globalThis.__name ||= ((target) => target);',
+          }}
+        />
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({

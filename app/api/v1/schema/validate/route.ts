@@ -23,7 +23,8 @@ export async function POST(request: NextRequest) {
     }
 
     return apiResponse(validateJsonAgainstSchema(json, schemaSlug), 200, requestId, request.headers, 'schema_validate')
-  } catch {
+  } catch (error) {
+    console.error('Schema validation failed', error)
     return apiError('Internal server error', 500, requestId, 'INTERNAL_ERROR', undefined, request.headers, 'schema_validate')
   }
 }

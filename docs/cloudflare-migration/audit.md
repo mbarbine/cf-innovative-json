@@ -2,7 +2,7 @@
 
 ## Runtime model
 
-The canary is a Next.js application packaged by OpenNext for Cloudflare Workers. `cloudflare/worker.ts` wraps the generated Worker only to add provider-neutral request timing and enforce the canary `X-Robots-Tag` header. `nodejs_compat` supports the bounded Node APIs used by the application.
+The canary is a Next.js application packaged by OpenNext for Cloudflare Workers. Wrangler deploys the generated `.open-next/worker.js` entrypoint directly, which avoids re-bundling OpenNext's server runtime and its middleware manifest loader. Next.js applies the canary `X-Robots-Tag` header to every route, while the API layer supplies provider-neutral request timing when no upstream timestamp exists. `nodejs_compat` supports the bounded Node APIs used by the application.
 
 There is no Next.js middleware or proxy in the canary. The Windows local `workerd` failure referencing a missing `middleware-manifest.json` occurs inside the OpenNext-generated dynamic-route runtime; Linux GitHub Actions is the authoritative compatibility gate.
 
