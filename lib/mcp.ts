@@ -4,6 +4,7 @@ import { openApiSpec } from './openapi'
 import { getJsonLdArtifacts, getSchema, getSchemaPack, getUniverseRegistry, listSchemas, validateJsonAgainstSchema, validateJsonLd } from './schema-registry'
 import { createTraceContext } from './trace'
 import { APP_VERSION, PRODUCT_NAME } from './platform'
+import { fetchTrustedJsonUrl, MCP_REMOTE_JSON_MAX_BYTES } from './remote-json'
 
 type JsonRpcId = string | number | null
 type JsonRpcRequest = {
@@ -35,6 +36,7 @@ const tool = (name: string, description: string, properties: Record<string, unkn
 })
 
 export const MCP_TOOLS = [
+  tool('fetch_json_url', 'Fetch and inspect a public JSON link from a trusted *.platphormnews.com host and return its graph-view handoff URL.', { url: { type: 'string', format: 'uri' } }, ['url']),
   tool('parse_json', 'Parse JSON and return validity, parsed data, and stats.', { json: { type: 'string' } }, ['json']),
   tool('format_json', 'Format valid JSON with indentation.', { json: { type: 'string' }, indent: { type: 'number', default: 2 } }, ['json']),
   tool('minify_json', 'Minify valid JSON.', { json: { type: 'string' } }, ['json']),
@@ -94,6 +96,18 @@ async function executeTool(name: string, args: Record<string, unknown>, headers?
   const registry = getUniverseRegistry()
 
   switch (name) {
+    case 'fetch_json_url': {
+      const result = await fetchTrustedJsonUrl(String(args.url || ''), { maxBytes: MCP_REMOTE_JSON_MAX_BYTES })
+      return {
+        status: 'available',
+        sourceUrl: result.sourceUrl,
+        viewerUrl: result.viewerUrl,
+        size: result.size,
+        contentType: result.contentType,
+        stats: result.stats,
+        json: result.parsed,
+      }
+    }
     case 'parse_json': {
       const parsed = validateJsonString(json)
       return parsed.valid

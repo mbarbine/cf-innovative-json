@@ -123,6 +123,30 @@ export const openApiSpec = {
         column: { type: 'integer' },
       },
     })),
+    '/api/v1/fetch-url': {
+      post: {
+        tags: ['JSON Tools'],
+        summary: 'Fetch bounded JSON from a trusted PlatPhormNews HTTPS URL and return a graph-view handoff link.',
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['url'],
+                properties: { url: { type: 'string', format: 'uri' } },
+              },
+            },
+          },
+        },
+        responses: {
+          '200': { description: 'Trusted JSON import', content: { 'application/json': { schema: okEnvelope({ type: 'object' }) } } },
+          '400': { description: 'Invalid or unsafe URL', content: { 'application/json': { schema: errorEnvelope } } },
+          '403': { description: 'Host is outside *.platphormnews.com', content: { 'application/json': { schema: errorEnvelope } } },
+          '413': { description: 'Response exceeds the bounded size limit', content: { 'application/json': { schema: errorEnvelope } } },
+        },
+      },
+    },
     '/api/v1/stats': postJsonTool('Calculate JSON statistics.', okEnvelope({ $ref: '#/components/schemas/JsonStats' })),
     '/api/v1/schema/validate': {
       post: {

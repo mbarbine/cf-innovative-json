@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server'
-import { apiResponse, apiError, createOptionsResponse, generateRequestId } from '@/lib/api-utils'
+import { apiResponse, apiError, calculateJsonStats, createOptionsResponse, generateRequestId } from '@/lib/api-utils'
+import { createJsonGraphUrl } from '@/lib/remote-json'
 import { fetchTrustedJson, TrustedFetchError } from '@/lib/trusted-fetch'
 
 export async function POST(request: NextRequest) {
@@ -17,11 +18,14 @@ export async function POST(request: NextRequest) {
       signal: AbortSignal.timeout(10_000),
       requestHeaders: request.headers,
     })
+    const parsed: unknown = JSON.parse(result.text)
 
     return apiResponse({
       json: result.text,
       url: result.finalUrl,
+      viewerUrl: createJsonGraphUrl(result.finalUrl),
       size: result.size,
+      stats: calculateJsonStats(parsed),
       contentType: result.contentType,
       redirects: result.redirects,
     }, 200, requestId, request.headers, 'fetch_json_url')

@@ -9,7 +9,15 @@ const config = [
     },
   },
   {
-    ignores: ['.next/**', 'node_modules/**', 'tsconfig.tsbuildinfo'],
+    ignores: [
+      '.next/**',
+      '.open-next/**',
+      '.vercel/**',
+      '.wrangler/**',
+      'cloudflare-env.d.ts',
+      'node_modules/**',
+      'tsconfig.tsbuildinfo',
+    ],
   },
 ]
 

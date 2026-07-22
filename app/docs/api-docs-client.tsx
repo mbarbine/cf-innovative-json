@@ -24,6 +24,22 @@ const endpoints = [
   },
   {
     method: 'POST',
+    path: '/api/v1/fetch-url',
+    description: 'Load public JSON from a trusted *.platphormnews.com HTTPS URL',
+    body: `{
+  "url": "https://trace.platphormnews.com/api/v1/workflows"
+}`,
+    response: `{
+  "ok": true,
+  "data": {
+    "url": "https://trace.platphormnews.com/api/v1/workflows",
+    "viewerUrl": "https://json.platphormnews.com/?url=...&v=graph",
+    "json": "{...}"
+  }
+}`
+  },
+  {
+    method: 'POST',
     path: '/api/v1/parse',
     description: 'Parse JSON into tree structure',
     body: `{
@@ -112,6 +128,13 @@ const endpoints = [
 ]
 
 const mcpTools = [
+  {
+    name: 'fetch_json_url',
+    description: 'Fetch a trusted PlatPhormNews JSON link and return its graph-view handoff URL',
+    params: [
+      { name: 'url', type: 'string', required: true }
+    ]
+  },
   {
     name: 'parse_json',
     description: 'Parse JSON into a tree structure with statistics',

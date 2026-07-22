@@ -102,6 +102,7 @@ export const API_ROUTES: PlatformRoute[] = [
   { path: '/api/v1/schema-pack', method: 'GET', publicSafe: true, implemented: true, category: 'api', description: 'Read schema pack metadata and files.' },
   { path: '/api/v1/jsonld', method: 'GET', publicSafe: true, implemented: true, category: 'api', description: 'Read JSON-LD structured data artifacts.' },
   { path: '/api/v1/jsonld/validate', method: 'POST', publicSafe: true, implemented: true, category: 'api', description: 'Validate JSON-LD structure locally.' },
+  { path: '/api/v1/fetch-url', method: 'POST', publicSafe: true, implemented: true, category: 'api', description: 'Fetch bounded public JSON from a trusted *.platphormnews.com HTTPS URL.' },
   { path: '/api/cron/refresh', method: 'POST', publicSafe: false, implemented: true, category: 'cron', description: 'Bounded metadata refresh for Vercel cron or PLATPHORM_API_KEY.' },
 ]
 

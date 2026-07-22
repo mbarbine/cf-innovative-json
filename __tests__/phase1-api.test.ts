@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { POST as parsePost } from '../app/api/v1/parse/route'
 import { POST as schemaValidatePost } from '../app/api/v1/schema/validate/route'
 import { GET as schemasGet } from '../app/api/v1/schemas/route'
@@ -14,6 +14,10 @@ function jsonRequest(path: string, body: unknown) {
     body: JSON.stringify(body),
   }) as never
 }
+
+afterEach(() => {
+  vi.unstubAllGlobals()
+})
 
 describe('Phase 1 JSON API contract', () => {
   it('parses JSON with ok envelope and trace metadata', async () => {
@@ -85,6 +89,7 @@ describe('Phase 1 JSON API contract', () => {
     const toolsResponse = await mcpPost(jsonRequest('/api/mcp', { jsonrpc: '2.0', id: 2, method: 'tools/list' }))
     const tools = await toolsResponse.json()
     expect(tools.result.tools.map((tool: { name: string }) => tool.name)).toContain('validate_against_schema')
+    expect(tools.result.tools.map((tool: { name: string }) => tool.name)).toContain('fetch_json_url')
 
     const callResponse = await mcpPost(jsonRequest('/api/mcp', {
       jsonrpc: '2.0',
@@ -94,6 +99,29 @@ describe('Phase 1 JSON API contract', () => {
     }))
     const call = await callResponse.json()
     expect(call.result.content[0].text).toContain('"formatted"')
+  })
+
+  it('executes a trusted JSON URL handoff through MCP', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{"ok":true,"data":{"workflows":[]}}', {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })))
+
+    const response = await mcpPost(jsonRequest('/api/mcp', {
+      jsonrpc: '2.0',
+      id: 4,
+      method: 'tools/call',
+      params: {
+        name: 'fetch_json_url',
+        arguments: { url: 'https://trace.platphormnews.com/api/v1/workflows' },
+      },
+    }))
+    const body = await response.json()
+    const result = JSON.parse(body.result.content[0].text)
+
+    expect(result.status).toBe('available')
+    expect(result.viewerUrl).toContain('https://json.platphormnews.com/')
+    expect(result.json.data.workflows).toEqual([])
   })
 
   it('builds sitemap routes from implemented public-safe routes only', () => {

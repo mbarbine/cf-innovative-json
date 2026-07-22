@@ -7,7 +7,7 @@ type WorkerContext = {
   passThroughOnException(): void
 }
 
-export default {
+const canaryWorker = {
   async fetch(request: Request, env: CloudflareEnv, context: WorkerContext): Promise<Response> {
     const requestHeaders = new Headers(request.headers)
     if (!requestHeaders.has('x-platphorm-request-started-at')) {
@@ -31,3 +31,5 @@ export default {
     })
   },
 }
+
+export default canaryWorker

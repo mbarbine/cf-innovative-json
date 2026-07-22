@@ -118,7 +118,7 @@ ${schemaItems}
 export function buildLlmsTxt() {
   const schemas = listSchemas()
   const schemaLines = schemas.map((schema) => `- ${schema.title}: ${schema.url} (${schema.status})`).join('\n')
-  const jsonTools = ['parse', 'format', 'minify', 'validate', 'stats', 'tree search', 'schema validation']
+  const jsonTools = ['trusted URL graph handoff', 'parse', 'format', 'minify', 'validate', 'stats', 'tree search', 'schema validation']
 
   return `# ${PRODUCT_NAME}
 
@@ -152,6 +152,7 @@ ${schemaLines}
 - POST ${BASE_URL}/api/v1/validate
 - POST ${BASE_URL}/api/v1/stats
 - POST ${BASE_URL}/api/v1/schema/validate
+- POST ${BASE_URL}/api/v1/fetch-url
 - GET ${BASE_URL}/api/v1/schemas
 - GET ${BASE_URL}/api/v1/schema-pack
 - GET ${BASE_URL}/api/v1/jsonld
@@ -214,7 +215,7 @@ export function buildLlmsIndex() {
       publicSafeByDefault: true,
       localDrafts: 'IndexedDB for non-sensitive browser-local JSON drafts and validation history.',
     },
-    jsonTools: ['parse', 'format', 'minify', 'validate', 'stats', 'tree_view', 'search', 'copy', 'download', 'local_drafts'],
+    jsonTools: ['trusted_url_graph_handoff', 'parse', 'format', 'minify', 'validate', 'stats', 'tree_view', 'search', 'copy', 'download', 'local_drafts'],
     schemaRegistry: {
       status: schemas.every((schema) => schema.status === 'active') ? 'active' : 'degraded',
       schemas: schemas.map(({ schema, ...record }) => record),
@@ -222,6 +223,7 @@ export function buildLlmsIndex() {
     schemaPack: getSchemaPack(),
     v0Endpoints: V0_ROUTES,
     tools: [
+      'fetch_json_url',
       'parse_json',
       'format_json',
       'minify_json',

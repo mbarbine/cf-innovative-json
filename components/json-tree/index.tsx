@@ -4,7 +4,7 @@ import { useEffect, useCallback, useRef, useState } from 'react'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { useJsonTreeStore } from '@/lib/store'
 import { formatJson, minifyJson } from '@/lib/json-utils'
-import { parseUrlParams } from '@/lib/sharing'
+import { fetchJsonFromUrl, parseSourceUrlParams, parseUrlParams } from '@/lib/sharing'
 import { JsonEditor } from './json-editor'
 import { TreeView } from './tree-view'
 import { GraphView } from './graph-view'
@@ -56,6 +56,11 @@ export function JsonTree({ initialSecurityControls }: JsonTreeProps) {
   )
   const [draftTooltip, setDraftTooltip] = useState(initialSecurityControls.message)
   const skipInitialPersistence = useRef(true)
+  const handoffRef = useRef<{
+    sourceUrl: string
+    status: 'loading' | 'loaded' | 'failed'
+    error?: string
+  } | null>(null)
   
   useEffect(() => {
     const shared = parseUrlParams()
@@ -68,6 +73,44 @@ export function JsonTree({ initialSecurityControls }: JsonTreeProps) {
       setDraftTooltip('This JSON was restored from the compressed URL parameter. It is still local to this browser.')
       setDraftReady(true)
       return
+    }
+
+    const source = parseSourceUrlParams()
+    if (source) {
+      let cancelled = false
+      handoffRef.current = { sourceUrl: source.sourceUrl, status: 'loading' }
+      setViewMode(source.viewMode)
+      setDraftStatus('Loading handoff')
+      setDraftTooltip(`Loading public-safe JSON from ${source.sourceUrl}`)
+
+      fetchJsonFromUrl(source.sourceUrl)
+        .then((json) => {
+          if (cancelled) return
+          handoffRef.current = { sourceUrl: source.sourceUrl, status: 'loaded' }
+          setRawJson(json)
+          setDraftStatus('URL handoff')
+          setDraftTooltip(`Loaded from ${source.sourceUrl} through the trusted PlatPhorm JSON importer.`)
+        })
+        .catch((error) => {
+          if (cancelled) return
+          const message = error instanceof Error
+            ? error.message
+            : 'The trusted JSON handoff could not be loaded.'
+          handoffRef.current = {
+            sourceUrl: source.sourceUrl,
+            status: 'failed',
+            error: message,
+          }
+          setDraftStatus('Handoff degraded')
+          setDraftTooltip(message)
+        })
+        .finally(() => {
+          if (!cancelled) setDraftReady(true)
+        })
+
+      return () => {
+        cancelled = true
+      }
     }
 
     setRawJson(initialSecurityControls.json)
@@ -93,6 +136,20 @@ export function JsonTree({ initialSecurityControls }: JsonTreeProps) {
     const timeout = window.setTimeout(() => {
       saveLocalJsonDraft(rawJson)
         .then((draft) => {
+          if (handoffRef.current?.status === 'loaded') {
+            setDraftStatus('URL handoff')
+            setDraftTooltip(
+              `Loaded from ${handoffRef.current.sourceUrl}. A recovery copy was saved in this browser only.`,
+            )
+            return
+          }
+          if (handoffRef.current?.status === 'failed') {
+            setDraftStatus('Handoff degraded')
+            setDraftTooltip(
+              handoffRef.current.error || 'The trusted JSON handoff could not be loaded.',
+            )
+            return
+          }
           const isUneditedLiveSnapshot = rawJson === initialSecurityControls.json
           setDraftStatus(
             isUneditedLiveSnapshot && initialSecurityControls.live

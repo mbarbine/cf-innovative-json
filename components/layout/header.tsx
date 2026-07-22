@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Github, ExternalLink, FileJson2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { APP_VERSION } from '@/lib/platform'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +12,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-
-const APP_VERSION = '1.0.0'
 
 export function Header() {
   const [mounted, setMounted] = useState(false)

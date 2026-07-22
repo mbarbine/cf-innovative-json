@@ -7,15 +7,20 @@ export interface ShareOptions {
   expandedLevel?: number
 }
 
+export interface SourceUrlOptions {
+  sourceUrl: string
+  viewMode: 'tree' | 'graph' | 'raw'
+}
+
 export function createShareUrl(options: ShareOptions): string {
-  const { json, viewMode = 'tree', expandedLevel = 2 } = options
+  const { json, viewMode = 'graph', expandedLevel = 2 } = options
   
   // Compress the JSON to make the URL shorter
   const compressed = compressToEncodedURIComponent(json)
   
   const params = new URLSearchParams()
   params.set('d', compressed)
-  if (viewMode !== 'tree') params.set('v', viewMode)
+  if (viewMode !== 'graph') params.set('v', viewMode)
   if (expandedLevel !== 2) params.set('e', String(expandedLevel))
   
   const baseUrl = typeof window !== 'undefined' 
@@ -40,7 +45,7 @@ export function parseShareUrl(url: string): ShareOptions | null {
     
     return {
       json,
-      viewMode: (urlObj.searchParams.get('v') as ShareOptions['viewMode']) || 'tree',
+      viewMode: parseViewMode(urlObj.searchParams.get('v')),
       expandedLevel: parseInt(urlObj.searchParams.get('e') || '2', 10)
     }
   } catch {
@@ -65,7 +70,7 @@ export function parseUrlParams(): ShareOptions | null {
     
     return {
       json,
-      viewMode: (params.get('v') as ShareOptions['viewMode']) || 'tree',
+      viewMode: parseViewMode(params.get('v')),
       expandedLevel: parseInt(params.get('e') || '2', 10)
     }
   } catch {
@@ -73,26 +78,47 @@ export function parseUrlParams(): ShareOptions | null {
   }
 }
 
+export function parseSourceUrlParams(): SourceUrlOptions | null {
+  if (typeof window === 'undefined') return null
+
+  const params = new URLSearchParams(window.location.search)
+  const sourceUrl = params.get('url')
+  if (!sourceUrl) return null
+
+  try {
+    const parsed = new URL(sourceUrl)
+    if (parsed.protocol !== 'https:') return null
+    return {
+      sourceUrl: parsed.toString(),
+      viewMode: parseViewMode(params.get('v')),
+    }
+  } catch {
+    return null
+  }
+}
+
 export async function fetchJsonFromUrl(url: string): Promise<string> {
-  const response = await fetch(url)
+  const response = await fetch('/api/v1/fetch-url', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  })
   
   if (!response.ok) {
-    throw new Error(`Failed to fetch JSON: ${response.status} ${response.statusText}`)
+    const failure = await response.json().catch(() => null) as { error?: { message?: string } } | null
+    throw new Error(failure?.error?.message || `Failed to fetch JSON: ${response.status} ${response.statusText}`)
   }
-  
-  const contentType = response.headers.get('content-type')
-  
-  // Accept JSON content types
-  if (!contentType?.includes('json') && !contentType?.includes('text')) {
-    throw new Error('URL does not return JSON content')
+
+  const payload = await response.json() as { ok?: boolean; data?: { json?: string }; error?: { message?: string } }
+  if (!payload.ok || typeof payload.data?.json !== 'string') {
+    throw new Error(payload.error?.message || 'Trusted JSON import returned an invalid response')
   }
-  
-  const text = await response.text()
-  
-  // Validate it's valid JSON
-  JSON.parse(text)
-  
-  return text
+  JSON.parse(payload.data.json)
+  return payload.data.json
+}
+
+function parseViewMode(value: string | null): 'tree' | 'graph' | 'raw' {
+  return value === 'tree' || value === 'raw' || value === 'graph' ? value : 'graph'
 }
 
 export function generateJsonPath(path: string[]): string {
