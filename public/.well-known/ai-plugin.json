@@ -1,0 +1,17 @@
+﻿{
+    "schema_version":  "v1",
+    "name_for_human":  "json API",
+    "name_for_model":  "json service",
+    "description_for_human":  "Public discovery and status endpoints for json.",
+    "description_for_model":  "Use this endpoint set to access API and metadata for json.",
+    "auth":  {
+                 "type":  "none"
+             },
+    "api":  {
+                "type":  "openapi",
+                "url":  "https://json.platphormnews.com/openapi.json"
+            },
+    "logo_url":  "https://json.platphormnews.com/favicon.ico",
+    "contact_email":  "support@platphormnews.com",
+    "legal_info_url":  "https://json.platphormnews.com/.well-known/trust.json"
+}

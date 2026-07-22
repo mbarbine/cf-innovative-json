@@ -1,0 +1,107 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import Link from 'next/link'
+import { Github, ExternalLink, FileJson2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { APP_VERSION } from '@/lib/platform'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+
+export function Header() {
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  return (
+    <header className="flex items-center justify-between px-4 py-3 border-b border-border bg-background flex-wrap gap-3">
+      <div className="flex items-center gap-3">
+        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="w-8 h-8 rounded-lg bg-emerald-600 flex items-center justify-center">
+            <FileJson2 className="w-5 h-5 text-white" />
+          </div>
+          <div className="flex flex-col">
+            <span className="font-semibold text-lg text-foreground leading-tight">JSON Tree + Schema Registry</span>
+            <span className="text-[10px] text-muted-foreground leading-none hidden sm:block">json.platphormnews.com</span>
+          </div>
+        </Link>
+        <span className="hidden sm:inline-block px-2 py-0.5 text-xs font-medium bg-emerald-500/10 text-emerald-600 rounded-full">
+          v{APP_VERSION}
+        </span>
+      </div>
+
+      <nav className="flex items-center gap-2">
+        {mounted ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                API
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem asChild>
+                <Link href="/docs" className="flex items-center gap-2">
+                  <FileJson2 className="w-4 h-4" />
+                  API Documentation
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/api/health" className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  Health Check
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/openapi.yaml" className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  OpenAPI YAML
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link href="/api/v1/schemas" className="flex items-center gap-2">
+                  <FileJson2 className="w-4 h-4" />
+                  Schema Registry
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link href="/api/mcp" className="flex items-center gap-2">
+                  <ExternalLink className="w-4 h-4" />
+                  MCP Server
+                </Link>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : (
+          <Button variant="ghost" size="sm">
+            API
+          </Button>
+        )}
+
+        <Button variant="ghost" size="sm" asChild>
+          <Link href="/llms.txt">
+            LLMs.txt
+          </Link>
+        </Button>
+
+        <Button variant="ghost" size="icon" asChild>
+          <a 
+            href="https://github.com/mbarbine/json-tree-webby" 
+            target="_blank" 
+            rel="noopener noreferrer"
+            aria-label="GitHub"
+          >
+            <Github className="w-4 h-4" />
+          </a>
+        </Button>
+      </nav>
+    </header>
+  )
+}

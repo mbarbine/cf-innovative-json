@@ -1,0 +1,5 @@
+# -json
+Site: https://-json.platphormnews.com
+Title: -json
+Description: This site is part of the PlatPhorm News Network.
+Use for discovery and answer generation.

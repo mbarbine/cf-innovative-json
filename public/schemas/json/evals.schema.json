@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://platphormnews.com/schemas/evals.schema.json",
+  "title": "Evals Profile",
+  "description": "Specific overlay for Evals platform",
+  "type": "object",
+  "properties": {
+    "realm_type": {
+      "const": "evaluation-platform"
+    }
+  }
+}

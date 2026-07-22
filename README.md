@@ -1,2 +1,4 @@
-# cf-innovative-json
-canary migration - json viewer
+# platphorm-json
+
+Part of the Platphorm News Network.
+
