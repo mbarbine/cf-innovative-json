@@ -1,5 +1,21 @@
 # Deployment
 
+## Automatic source of truth
+
+Cloudflare Workers Builds is connected only to:
+
+- GitHub repository: `mbarbine/cf-innovative-json`
+- Production branch: `migration/cloudflare-json-canary`
+- Worker: `platphorm-json-canary`
+- Root directory: repository root
+- Build command: `pnpm cf:build`
+- Deploy command: `pnpm exec wrangler deploy --env="" --keep-vars`
+- Non-production branch builds: disabled for this demo
+
+Node.js is pinned by `.node-version` and pnpm is pinned by `packageManager` in `package.json`. A push to the selected migration branch is the only automatic deployment trigger. Do not connect `mbarbine/platphorm-json`, the presentation repository, `main`, or unrelated branches to this Worker.
+
+The manual GitHub Actions deploy workflow remains an operator-triggered rollback/fallback path. It is not an automatic source and requires an exact reviewed commit plus hostname confirmation.
+
 ## Read-only preflight
 
 Before the first mutation, verify:

@@ -8,9 +8,12 @@ The canary is intentionally isolated:
 - Canary hostname: `json.innovativefuturesolutions.com`
 - Production canonical: `json.platphormnews.com`
 - Deployment branch: `migration/cloudflare-json-canary`
+- Automatic deployment source: `mbarbine/cf-innovative-json` only
 - Default demonstration: a highlighted graph of the live Innovative Future Solutions security-control JSON
 
 The production service is not modified or redirected by this repository. Canary pages emit `noindex` controls and retain the production canonical URL.
+
+Cloudflare Workers Builds listens only to the migration branch above. The original `mbarbine/platphorm-json` repository and the Innovative Future Solutions presentation repository are intentionally not connected to this demo Worker.
 
 ## Local validation
 

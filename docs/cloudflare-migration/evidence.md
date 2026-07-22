@@ -37,6 +37,7 @@ This file records nonsecret, redacted evidence. Never add API tokens, Worker sec
 | Check | Result |
 | --- | --- |
 | Exact deployed commit | Pending |
+| Workers Builds source | `mbarbine/cf-innovative-json`, branch `migration/cloudflare-json-canary`; connection pending |
 | workers.dev URL/version | Pending |
 | workers.dev smoke | Pending |
 | Custom-domain DNS/TLS | Pending |

@@ -27,3 +27,5 @@ Never place its value in `wrangler.jsonc`, `.dev.vars`, workflow YAML, Markdown,
 ## Optional Cloudflare account credentials
 
 Local Wrangler may use its OAuth session. GitHub Actions uses repository/environment secrets for the Cloudflare API token and account identifier. Neither value belongs in the repository or evidence artifacts.
+
+Cloudflare Workers Builds uses the Git integration's managed deployment token. Its build environment should use the repository-pinned Node.js and pnpm versions. Build-only secrets are separate from runtime secrets; `PLATPHORM_API_KEY` belongs under the Worker's runtime Variables and Secrets, not the build environment.
