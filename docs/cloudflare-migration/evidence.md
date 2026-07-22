@@ -9,14 +9,15 @@ This file records nonsecret, redacted evidence. Never add API tokens, Worker sec
 | Source baseline | `69fdc6eb7b1dd8afcd1f1684d73303e90ec8c279` |
 | Migration branch | `migration/cloudflare-json-canary` |
 | Operator application reconciliation | merge commit `4bf814c` |
-| Lint | Passed after final route inventory and documentation update |
-| Typecheck | Passed after final route inventory and documentation update |
-| Unit tests | 13 files, 83 tests passed |
+| Validated runtime checkpoint | `0ff930f` (exact-route static-shadow removal) |
+| Lint | Passed after the final route and smoke-harness updates |
+| Typecheck | Passed after the final route and smoke-harness updates |
+| Unit tests | 14 files, 84 tests passed |
 | Next.js production build | Passed; 50 routes |
 | OpenNext build | Passed |
-| Wrangler dry-run bundle | 6,726.81 KiB upload; 1,352.70 KiB gzip; assets plus nonsecret variables only |
+| Cloudflare source-build bundle | 6,122.71 KiB upload; 1,217.63 KiB gzip; 27 ms startup |
 | Windows local workerd | Dynamic routes blocked by generated middleware-manifest resolution; static routes passed |
-| Linux workerd | Pending GitHub Actions validation |
+| Linux Cloudflare build/runtime | Source build and deployed Worker passed; local Linux workerd remained unavailable because the WSL distribution had no usable Node/DNS bootstrap path |
 
 ## Cloudflare control plane
 
@@ -36,14 +37,15 @@ This file records nonsecret, redacted evidence. Never add API tokens, Worker sec
 
 | Check | Result |
 | --- | --- |
-| Exact deployed commit | Pending |
-| Workers Builds source | `mbarbine/cf-innovative-json`, branch `migration/cloudflare-json-canary`; connection pending |
-| workers.dev URL/version | Pending |
-| workers.dev smoke | Pending |
-| Custom-domain DNS/TLS | Pending |
-| Custom-domain smoke/parity | Pending |
-| Canary noindex/robots | Pending |
-| Deterministic WAF normal request | Pending |
-| Deterministic WAF demo block | Pending |
-| Production-safety comparison | Pending |
-| Rollback rehearsal | Pending |
+| Workers Builds source | `mbarbine/cf-innovative-json`, branch `migration/cloudflare-json-canary`; automatic source connection active only for this branch |
+| Runtime secret | `PLATPHORM_API_KEY` stored as a Worker secret; value never logged or committed |
+| Validated deployment | Runtime checkpoint `0ff930f`; Worker version `8e08990a…` |
+| workers.dev URL | `https://platphorm-json-canary.barbine-michael.workers.dev` |
+| workers.dev smoke | 29/29 passed at 2026-07-22T23:39Z |
+| Custom-domain DNS/TLS | Two independent public resolvers returned the Cloudflare addresses; certificate validation result 0; HTTP 200 |
+| Custom-domain smoke/parity | 29/29 passed at 2026-07-22T23:41Z using the exact hostname and TLS SNI through a temporary local DNS-pin proxy because the Windows resolver retained an earlier NXDOMAIN answer |
+| Canary noindex/robots | `X-Robots-Tag`, HTML robots metadata, production canonical, and terminal disallow-all robots group verified |
+| Deterministic WAF normal request | HTTP 200 at 2026-07-22T23:42Z |
+| Deterministic WAF demo block | HTTP 403 at 2026-07-22T23:42Z; owned rule ref `platphorm_json_canary_demo_block_v1`, rule ID `14d1fb09…` |
+| Production-safety comparison | Production returned HTTP 200 with and without the canary demo marker and did not redirect to the canary |
+| Rollback viability | Previous known-good Worker version `21b84b17…` retained; installed Wrangler rollback and trigger command families verified; rollback was intentionally not performed after success |

@@ -20,3 +20,18 @@
 | `/favicon.ico`, `/opengraph-image` | GET | Asset response or bounded redirect |
 
 The remote smoke suite exercises representative GET, POST, malformed-input, payload-limit, MCP, SSE, CORS, trace, canonical/noindex, redirect-isolation, and normalized parity paths. It writes a machine-readable report under `.wrangler/`, which is ignored by Git.
+
+## Validation matrix
+
+| Gate | Local build | workers.dev | Custom domain |
+| --- | --- | --- | --- |
+| Next.js/OpenNext compilation | Passed | Passed in Cloudflare source build | Same deployed version |
+| Public GET and discovery routes | Covered by unit/build validation | Passed | Passed |
+| Representative JSON POST routes | Covered by unit validation | Passed | Passed |
+| Schema validation | Precompiled AJV validators tested | Passed | Passed |
+| MCP JSON-RPC and bounded SSE | Unit and route tests passed | Passed | Passed |
+| Noindex, production canonical, robots | Unit tests passed | Passed | Passed, including Cloudflare content-signals prefix |
+| Trace context and critical CORS | Unit tests passed | Passed | Passed |
+| Normalized production parity | Not applicable | Passed | Passed |
+
+The complete remote result was 29/29 on both hostnames. Windows local workerd remains blocked by OpenNext's generated middleware-manifest resolution on Windows. The deployed Linux Worker is the accepted runtime gate; the limitation is recorded rather than presented as a local pass.

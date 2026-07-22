@@ -1,6 +1,7 @@
 import { writeFileSync } from 'node:fs'
 
 const canaryUrl = (process.env.CLOUDFLARE_CANARY_URL || '').replace(/\/$/, '')
+const canaryRequestUrl = (process.env.CLOUDFLARE_CANARY_REQUEST_URL || canaryUrl).replace(/\/$/, '')
 const productionUrl = (process.env.PRODUCTION_JSON_URL || 'https://json.platphormnews.com').replace(/\/$/, '')
 const timeoutMs = Number(process.env.SMOKE_TIMEOUT_MS || 12_000)
 const mode = process.env.SMOKE_MODE || 'remote'
@@ -38,10 +39,16 @@ async function timedFetch(url, init = {}) {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), timeoutMs)
   try {
-    return await fetch(url, { redirect: 'manual', ...init, signal: controller.signal })
+    return await fetch(requestUrl(url), { redirect: 'manual', ...init, signal: controller.signal })
   } finally {
     clearTimeout(timer)
   }
+}
+
+function requestUrl(url) {
+  return url === canaryUrl || url.startsWith(`${canaryUrl}/`)
+    ? `${canaryRequestUrl}${url.slice(canaryUrl.length)}`
+    : url
 }
 
 async function check(name, run) {
@@ -153,7 +160,7 @@ await check('MCP SSE first event and bounded abort', async () => {
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), Math.min(timeoutMs, 4_000))
   try {
-    const response = await fetch(`${canaryUrl}/api/mcp/sse`, { signal: controller.signal })
+    const response = await fetch(requestUrl(`${canaryUrl}/api/mcp/sse`), { signal: controller.signal })
     assert(response.status === 200 && response.body, `SSE returned ${response.status}`)
     const reader = response.body.getReader()
     const first = await reader.read()
@@ -179,8 +186,8 @@ await check('canonical and canary noindex', async () => {
 await check('canary robots disallow', async () => {
   const response = await expectStatus(canaryUrl, '/robots.txt')
   const text = await response.text()
-  assert(text.trim() === 'User-agent: *\nDisallow: /', 'canary robots policy is not disallow-all')
-  return { status: response.status }
+  assert(/User-agent:\s*\*\s*\r?\nDisallow:\s*\/\s*$/i.test(text.trim()), 'canary robots policy does not end with disallow-all')
+  return { status: response.status, cloudflareContentSignalsPresent: text.includes('Cloudflare Managed Content') }
 })
 
 await check('trace context propagation and CORS', async () => {
@@ -231,6 +238,7 @@ if (mode !== 'local' && productionUrl !== canaryUrl) {
 const failed = results.filter((result) => !result.ok)
 const report = {
   target: canaryUrl,
+  requestTarget: canaryRequestUrl === canaryUrl ? null : canaryRequestUrl,
   productionTarget: mode === 'local' ? null : productionUrl,
   mode,
   startedAt,
