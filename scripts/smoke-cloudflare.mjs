@@ -219,7 +219,8 @@ if (mode !== 'local' && productionUrl !== canaryUrl) {
       ])
       const [canaryBody, productionBody] = await Promise.all([canaryResponse.json(), productionResponse.json()])
       if (path === '/openapi.json') {
-        assert(canaryBody?.['x-platphorm']?.routeCount === Object.keys(canaryBody?.paths || {}).length, 'canary OpenAPI routeCount is not self-consistent')
+        const operationCount = canaryBody?.['x-platphorm']?.routeCount
+        assert(Number.isInteger(operationCount) && operationCount >= Object.keys(canaryBody?.paths || {}).length, 'canary OpenAPI routeCount is not a valid operation count')
       }
       assert(JSON.stringify(normalizedForParity(canaryBody, path)) === JSON.stringify(normalizedForParity(productionBody, path)), `${path} differs after dynamic-field normalization`)
       return { status: 'equal-after-normalization' }
