@@ -3,7 +3,11 @@
 import { ArrowLeft, ArrowRight, ExternalLink, Radio, ShieldCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import type { SecurityControlTone, SecurityControlsSnapshot } from '@/lib/security-controls'
+import {
+  formatSecuritySnapshotTime,
+  type SecurityControlTone,
+  type SecurityControlsSnapshot,
+} from '@/lib/security-controls'
 
 export interface SecurityPresentationStep {
   tone: SecurityControlTone
@@ -65,9 +69,7 @@ export function SecurityPresentationGuide({
   const steps = SECURITY_PRESENTATION_STEPS.filter(step => availableTones.includes(step.tone))
   const activeIndex = Math.max(0, steps.findIndex(step => step.tone === activeTone))
   const activeStep = steps[activeIndex] ?? SECURITY_PRESENTATION_STEPS[0]
-  const capturedLabel = snapshot.capturedAt
-    ? new Date(snapshot.capturedAt).toLocaleString()
-    : 'No capture time reported'
+  const capturedLabel = formatSecuritySnapshotTime(snapshot.capturedAt) ?? 'No capture time reported'
 
   const move = (offset: number) => {
     const nextIndex = Math.min(Math.max(activeIndex + offset, 0), steps.length - 1)

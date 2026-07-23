@@ -23,6 +23,7 @@ import {
 } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
 import {
+  formatSecuritySnapshotTime,
   getSecurityControlTone,
   type SecurityControlTone,
   type SecurityControlsSnapshot,
@@ -1003,7 +1004,7 @@ export const GraphView = memo(function GraphView({
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground">
               Live server-side snapshot with semantic control highlighting
-              {capturedAt ? ` · ${new Date(capturedAt).toLocaleString()}` : ''}
+              {capturedAt ? ` · ${formatSecuritySnapshotTime(capturedAt)}` : ''}
             </p>
             <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Security control legend">
               {securityLegend.map(tone => (

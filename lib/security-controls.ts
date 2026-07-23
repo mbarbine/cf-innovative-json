@@ -64,6 +64,13 @@ export function getSecurityControlTone(path: string[]): SecurityControlTone | nu
   return null
 }
 
+export function formatSecuritySnapshotTime(value: string | null): string | null {
+  if (!value) return null
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toISOString().replace('T', ' ').replace(/\.\d{3}Z$/, ' UTC')
+}
+
 export async function loadSecurityControlsSnapshot(
   fetcher: typeof fetch = fetch,
 ): Promise<SecurityControlsSnapshot> {

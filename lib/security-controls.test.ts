@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import {
   DEFAULT_SECURITY_CONTROLS_JSON,
   DEFAULT_SECURITY_CONTROLS_VIEW,
+  formatSecuritySnapshotTime,
   getSecurityControlTone,
   loadSecurityControlsSnapshot,
   SECURITY_CONTROLS_SOURCE_URL,
@@ -29,6 +30,12 @@ describe('security controls demo source', () => {
       'rateLimit',
     ])
     expect(SECURITY_PRESENTATION_STEPS.every(step => step.proof.length > 0)).toBe(true)
+  })
+
+  it('formats snapshot time deterministically for server and browser hydration', () => {
+    expect(formatSecuritySnapshotTime('2026-07-22T04:02:54Z')).toBe('2026-07-22 04:02:54 UTC')
+    expect(formatSecuritySnapshotTime(null)).toBeNull()
+    expect(formatSecuritySnapshotTime('not-a-date')).toBe('not-a-date')
   })
 
   it('formats a valid live snapshot for the graph', async () => {
