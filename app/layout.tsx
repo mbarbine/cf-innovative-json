@@ -7,6 +7,51 @@ import './globals.css'
 
 const deployment = getDeploymentConfig()
 const seo = getSeoPolicy()
+const discoveryStructuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${deployment.appUrl}/#organization`,
+      name: 'PlatPhormNews',
+      url: 'https://platphormnews.com',
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${deployment.appUrl}/#website`,
+      url: deployment.appUrl,
+      name: 'JSON Tree + PlatPhorm Schema Registry',
+      publisher: { '@id': `${deployment.appUrl}/#organization` },
+      datePublished: '2026-07-22',
+      dateModified: '2026-07-22',
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': `${deployment.appUrl}/#faq`,
+      url: `${deployment.appUrl}/faq`,
+      name: 'JSON Tree frequently asked questions',
+      isPartOf: { '@id': `${deployment.appUrl}/#website` },
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What can I inspect with JSON Tree?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Inspect, search, format, validate, and visualize public JSON as a tree or graph.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Does JSON Tree expose machine-readable interfaces?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. It publishes OpenAPI, MCP, schema registry, sitemap, feed, and LLM discovery surfaces.',
+          },
+        },
+      ],
+    },
+  ],
+}
 
 const geistSans = Geist({ 
   subsets: ["latin"],
@@ -168,6 +213,10 @@ export default function RootLayout({
               ]
             })
           }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(discoveryStructuredData) }}
         />
       </head>
       <body className="font-sans antialiased">

@@ -201,20 +201,23 @@ await check('MCP SSE first event and bounded abort', async () => {
   }
 })
 
-await check('canonical and canary noindex', async () => {
+await check('public canary canonical and indexability', async () => {
   const response = await expectStatus(canaryUrl, '/')
   const html = await response.text()
-  assert(response.headers.get('x-robots-tag')?.includes('noindex'), 'missing canary X-Robots-Tag')
-  assert(/<meta[^>]+name=["']robots["'][^>]+noindex/i.test(html) || /<meta[^>]+content=["'][^"']*noindex[^"']*["'][^>]+name=["']robots/i.test(html), 'missing noindex HTML metadata')
-  assert(html.includes('https://json.platphormnews.com'), 'missing production canonical identity')
-  return { status: response.status, canonical: 'production', noindex: true }
+  assert(!response.headers.get('x-robots-tag')?.includes('noindex'), 'unexpected canary X-Robots-Tag noindex')
+  assert(!/<meta[^>]+name=["']robots["'][^>]+noindex/i.test(html), 'unexpected noindex HTML metadata')
+  assert(html.includes('https://json.innovativefuturesolutions.com'), 'missing public canary canonical identity')
+  assert(/<h1\b/i.test(html), 'missing primary heading')
+  return { status: response.status, canonical: 'canary', indexable: true }
 })
 
-await check('canary robots disallow', async () => {
+await check('public canary crawler policy', async () => {
   const response = await expectStatus(canaryUrl, '/robots.txt')
   const text = await response.text()
-  assert(/User-agent:\s*\*\s*\r?\nDisallow:\s*\/\s*$/i.test(text.trim()), 'canary robots policy does not end with disallow-all')
-  return { status: response.status, cloudflareContentSignalsPresent: text.includes('Cloudflare Managed Content') }
+  assert(/User-agent:\s*GPTBot\s*\r?\nAllow:\s*\//i.test(text), 'GPTBot is not explicitly allowed')
+  assert(/User-agent:\s*ClaudeBot\s*\r?\nAllow:\s*\//i.test(text), 'ClaudeBot is not explicitly allowed')
+  assert(/Sitemap:\s*https:\/\/json\.innovativefuturesolutions\.com\/sitemap\.xml/i.test(text), 'absolute canary sitemap is missing')
+  return { status: response.status, publicDiscovery: true, cloudflareContentSignalsPresent: text.includes('Cloudflare Managed Content') }
 })
 
 await check('trace context propagation and CORS', async () => {

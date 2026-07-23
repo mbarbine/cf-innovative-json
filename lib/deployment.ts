@@ -8,6 +8,7 @@ export type DeploymentConfig = {
   provider: DeploymentProvider
   environment: DeploymentEnvironment
   canary: boolean
+  publicDiscovery: boolean
   appUrl: string
   canonicalUrl: string
   traceBaseUrl: string
@@ -55,6 +56,7 @@ export function getDeploymentConfig(env: Environment = process.env): DeploymentC
     provider,
     environment,
     canary,
+    publicDiscovery: env.PLATPHORM_PUBLIC_DISCOVERY === 'true',
     appUrl: absoluteHttpUrl(env.NEXT_PUBLIC_APP_URL, defaultAppUrl),
     canonicalUrl: absoluteHttpUrl(env.NEXT_PUBLIC_CANONICAL_URL, PRODUCTION_JSON_URL),
     traceBaseUrl: absoluteHttpUrl(env.PLATPHORM_TRACE_BASE_URL, 'https://trace.platphormnews.com'),
@@ -65,11 +67,12 @@ export function getDeploymentConfig(env: Environment = process.env): DeploymentC
 
 export function getSeoPolicy(env: Environment = process.env) {
   const deployment = getDeploymentConfig(env)
+  const publicCanary = deployment.canary && deployment.publicDiscovery
   return {
-    canonicalUrl: deployment.canonicalUrl,
-    index: !deployment.canary,
-    follow: !deployment.canary,
-    robotsHeader: deployment.canary ? 'noindex, nofollow, noarchive' : null,
+    canonicalUrl: publicCanary ? deployment.appUrl : deployment.canonicalUrl,
+    index: !deployment.canary || publicCanary,
+    follow: !deployment.canary || publicCanary,
+    robotsHeader: deployment.canary && !publicCanary ? 'noindex, nofollow, noarchive' : null,
   }
 }
 

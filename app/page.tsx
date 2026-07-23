@@ -19,6 +19,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     <div className="flex flex-col h-screen">
       <Header />
       <main className="flex-1 overflow-hidden">
+        <h1 className="sr-only">JSON Tree and PlatPhorm Schema Registry</h1>
         <JsonTree
           initialSecurityControls={securityControls}
           presentationMode={presentationMode}

@@ -6,9 +6,10 @@
 | --- | --- | --- |
 | `DEPLOYMENT_PROVIDER` | `cloudflare` | Select Worker runtime metadata |
 | `DEPLOYMENT_ENVIRONMENT` | `canary` | Select canary behavior |
-| `PLATPHORM_CANARY` | `true` | Enforce noindex and canary identity |
+| `PLATPHORM_CANARY` | `true` | Preserve canary runtime identity and rollback separation |
+| `PLATPHORM_PUBLIC_DISCOVERY` | `true` | Opt the demo hostname into indexing, self-canonical metadata, and explicit crawler access |
 | `NEXT_PUBLIC_APP_URL` | `https://json.innovativefuturesolutions.com` | Public canary URL |
-| `NEXT_PUBLIC_CANONICAL_URL` | `https://json.platphormnews.com` | Preserve production canonical identity |
+| `NEXT_PUBLIC_CANONICAL_URL` | `https://json.innovativefuturesolutions.com` | Publish the demo hostname as its own canonical URL |
 | `PLATPHORM_TRACE_BASE_URL` | `https://trace.platphormnews.com` | Trace integration origin |
 | `PLATPHORM_REQUIRE_API_KEY` | `false` | Keep Phase 1 public-safe operations open |
 

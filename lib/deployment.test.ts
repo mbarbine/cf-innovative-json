@@ -12,7 +12,7 @@ describe('deployment contract', () => {
       provider: 'vercel', environment: 'production', canary: false, runtime: 'vercel-functions',
     })
     expect(getDeploymentConfig({ DEPLOYMENT_PROVIDER: 'cloudflare', DEPLOYMENT_ENVIRONMENT: 'canary', PLATPHORM_CANARY: 'true' })).toMatchObject({
-      provider: 'cloudflare', environment: 'canary', canary: true, runtime: 'cloudflare-workers',
+      provider: 'cloudflare', environment: 'canary', canary: true, publicDiscovery: false, runtime: 'cloudflare-workers',
     })
     expect(getDeploymentConfig({ DEPLOYMENT_PROVIDER: 'local' })).toMatchObject({
       provider: 'local', environment: 'development', appUrl: 'http://localhost:3000',
@@ -35,6 +35,23 @@ describe('deployment contract', () => {
     })
   })
 
+  it('supports an explicitly public, self-canonical canary discovery policy', () => {
+    const policy = getSeoPolicy({
+      DEPLOYMENT_PROVIDER: 'cloudflare',
+      DEPLOYMENT_ENVIRONMENT: 'canary',
+      PLATPHORM_CANARY: 'true',
+      PLATPHORM_PUBLIC_DISCOVERY: 'true',
+      NEXT_PUBLIC_APP_URL: 'https://json.innovativefuturesolutions.com',
+      NEXT_PUBLIC_CANONICAL_URL: 'https://json.innovativefuturesolutions.com',
+    })
+    expect(policy).toEqual({
+      canonicalUrl: 'https://json.innovativefuturesolutions.com',
+      index: true,
+      follow: true,
+      robotsHeader: null,
+    })
+  })
+
   it('renders Vercel Analytics only for the Vercel provider', () => {
     expect(shouldRenderVercelAnalytics({ DEPLOYMENT_PROVIDER: 'vercel' })).toBe(true)
     expect(shouldRenderVercelAnalytics({ DEPLOYMENT_PROVIDER: 'cloudflare' })).toBe(false)
@@ -48,6 +65,20 @@ describe('deployment contract', () => {
     const response = await robotsGet()
     expect(await response.text()).toBe('User-agent: *\nDisallow: /\n')
     expect(response.headers.get('x-robots-tag')).toBe('noindex, nofollow, noarchive')
+  })
+
+  it('publishes explicit crawler and sitemap rules when public discovery is enabled', async () => {
+    vi.stubEnv('DEPLOYMENT_PROVIDER', 'cloudflare')
+    vi.stubEnv('DEPLOYMENT_ENVIRONMENT', 'canary')
+    vi.stubEnv('PLATPHORM_CANARY', 'true')
+    vi.stubEnv('PLATPHORM_PUBLIC_DISCOVERY', 'true')
+    vi.stubEnv('NEXT_PUBLIC_APP_URL', 'https://json.innovativefuturesolutions.com')
+    const response = await robotsGet()
+    const body = await response.text()
+    expect(body).toContain('User-agent: GPTBot\nAllow: /')
+    expect(body).toContain('User-agent: ClaudeBot\nAllow: /')
+    expect(body).toContain('Sitemap: https://json.innovativefuturesolutions.com/sitemap.xml')
+    expect(response.headers.get('x-robots-tag')).toBeNull()
   })
 
   it('captures Cloudflare metadata with a hashed, never raw, client IP', () => {

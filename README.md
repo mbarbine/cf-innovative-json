@@ -6,12 +6,12 @@ The canary is intentionally isolated:
 
 - Worker: `platphorm-json-canary`
 - Canary hostname: `json.innovativefuturesolutions.com`
-- Production canonical: `json.platphormnews.com`
+- Public canonical: `json.innovativefuturesolutions.com`
 - Deployment branch: `migration/cloudflare-json-canary`
 - Automatic deployment source: `mbarbine/cf-innovative-json` only
 - Default demonstration: a highlighted graph of the live Innovative Future Solutions security-control JSON
 
-The production service is not modified or redirected by this repository. Canary pages emit `noindex` controls and retain the production canonical URL.
+The production service is not modified or redirected by this repository. The demo canary opts into public discovery with `PLATPHORM_PUBLIC_DISCOVERY=true`; removing that variable restores the default noindex/disallow isolation policy.
 
 Cloudflare Workers Builds listens only to the migration branch above. The original `mbarbine/platphorm-json` repository and the Innovative Future Solutions presentation repository are intentionally not connected to this demo Worker.
 

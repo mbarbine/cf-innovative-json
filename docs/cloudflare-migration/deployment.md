@@ -58,7 +58,7 @@ The `custom-domain` Wrangler environment contains only the exact reviewed hostna
 pnpm exec wrangler triggers deploy --env custom-domain --name platphorm-json-canary
 ```
 
-Then verify DNS, TLS, certificate hostname, no redirects, noindex headers and metadata, robots disallow-all, route smoke, normalized parity, and production isolation.
+Then verify DNS, TLS, certificate hostname, no redirects, the public canary canonical/indexability policy, explicit crawler access, route smoke, normalized parity, and production isolation.
 
 ## CI workflow
 

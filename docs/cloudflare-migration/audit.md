@@ -18,13 +18,13 @@ The existing application-level `Map` rate limiter is isolate-local and therefore
 - User-selected remote JSON is restricted to trusted HTTPS PlatPhorm hosts, rejects credentialed URLs and unsafe redirects, enforces response size limits, and validates JSON before returning it.
 - Trace export is bounded by a short timeout and hashes client network identifiers rather than retaining raw addresses.
 - Public API payload parsing is bounded at the application layer; Cloudflare perimeter limits remain a separate control.
-- Canary discovery retains the production canonical identity and disables indexing.
+- Canary discovery is isolated by default; the demo deployment explicitly opts into a self-canonical, indexable public-discovery policy without changing production.
 
 ## Compatibility disposition
 
 | Concern | Disposition |
 | --- | --- |
-| Middleware/proxy | Removed from the canary; Wrangler deploys OpenNext directly and Next response headers enforce noindex |
+| Middleware/proxy | Removed from the canary; Wrangler deploys OpenNext directly and the deployment policy controls public discovery without request middleware |
 | Dynamic Next routes | Must pass Ubuntu `workerd` smoke before deployment |
 | Node crypto | Supported through `nodejs_compat` |
 | AJV schema compilation | Bundled, trusted schemas compile once during isolate startup under the pinned compatibility date; request data is never evaluated as code |

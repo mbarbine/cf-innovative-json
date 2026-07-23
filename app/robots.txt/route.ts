@@ -4,7 +4,7 @@ import { getDeploymentConfig } from '@/lib/deployment'
 
 export async function GET() {
   const deployment = getDeploymentConfig()
-  if (deployment.canary) {
+  if (deployment.canary && !deployment.publicDiscovery) {
     return new NextResponse('User-agent: *\nDisallow: /\n', {
       headers: {
         ...corsHeaders(),
@@ -15,7 +15,7 @@ export async function GET() {
     })
   }
 
-  const baseUrl = deployment.canonicalUrl
+  const baseUrl = deployment.canary ? deployment.appUrl : deployment.canonicalUrl
   const content = `User-agent: *
 Allow: /
 Allow: /api/docs
@@ -32,6 +32,18 @@ Allow: /llms-full.txt
 Allow: /llms-index.json
 Allow: /rss.xml
 Allow: /feed.xml
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
 
 Sitemap: ${baseUrl}/sitemap.xml
 Sitemap: ${baseUrl}/sitemap-main.xml
