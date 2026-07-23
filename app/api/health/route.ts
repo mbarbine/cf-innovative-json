@@ -5,11 +5,14 @@ import { getDiscoveryCompliance, getRouteCompliance } from '@/lib/discovery'
 import { getModelAdapterStatus } from '@/lib/model-adapter'
 import { getSchemaPack } from '@/lib/schema-registry'
 import { APP_VERSION, PRODUCT_NAME, SERVICE_ID } from '@/lib/platform'
+import { getDeploymentConfig } from '@/lib/deployment'
+import { TRUSTED_PUBLIC_JSON_SCOPE } from '@/lib/trusted-json-hosts'
 
-export async function GET(request?: NextRequest) {
-  const headers = request?.headers
+export async function GET(request: NextRequest) {
+  const headers = request.headers
   const schemaPack = getSchemaPack()
-  const traceContextAccepted = Boolean(request?.headers.get("traceparent"))
+  const deployment = getDeploymentConfig()
+  const traceContextAccepted = Boolean(request.headers.get("traceparent"))
   const traceContextPropagated = traceContextAccepted
   const vercelMetadataCaptured = headers ? Boolean(headers.get("x-vercel-id") || headers.get("x-vercel-cache")) : false
 
@@ -18,10 +21,14 @@ export async function GET(request?: NextRequest) {
       service: SERVICE_ID,
       product: PRODUCT_NAME,
       version: APP_VERSION,
-      environment: process.env.VERCEL_ENV || process.env.NODE_ENV || 'development',
+      provider: deployment.provider,
+      runtime: deployment.runtime,
+      environment: deployment.environment,
+      canary: deployment.canary,
       status: schemaPack.status === 'active' ? 'active' : 'degraded',
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
+      uptimeScope: 'process-or-isolate',
       routeComplianceScore: getRouteCompliance().score,
       observabilityComplianceScore: schemaPack.status === 'active' ? 1 : 0.82,
       database: {
@@ -41,7 +48,7 @@ export async function GET(request?: NextRequest) {
       schemaPack,
       auth: getAuthPolicy('future-protected'),
       modelIntegration: getModelAdapterStatus(headers),
-      trustedDomainStatus: '*.platphormnews.com',
+      trustedDomainStatus: TRUSTED_PUBLIC_JSON_SCOPE,
       traceEnabled: true,
       traceExportEnabled: false,
       traceContextAccepted,

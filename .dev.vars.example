@@ -1,0 +1,9 @@
+# Copy to .dev.vars for local workerd preview. Do not commit .dev.vars.
+DEPLOYMENT_PROVIDER=cloudflare
+DEPLOYMENT_ENVIRONMENT=canary
+PLATPHORM_CANARY=true
+NEXT_PUBLIC_APP_URL=https://json.innovativefuturesolutions.com
+NEXT_PUBLIC_CANONICAL_URL=https://json.platphormnews.com
+PLATPHORM_TRACE_BASE_URL=https://trace.platphormnews.com
+PLATPHORM_REQUIRE_API_KEY=false
+PLATPHORM_API_KEY=replace-with-a-local-test-secret

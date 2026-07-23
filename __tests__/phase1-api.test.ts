@@ -118,9 +118,15 @@ describe('Phase 1 JSON API contract', () => {
     }))
     const body = await response.json()
     const result = JSON.parse(body.result.content[0].text)
+    const viewerUrl = new URL(result.viewerUrl)
+    const expectedViewerOrigin = new URL(
+      process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com',
+    ).origin
 
     expect(result.status).toBe('available')
-    expect(result.viewerUrl).toContain('https://json.platphormnews.com/')
+    expect(viewerUrl.origin).toBe(expectedViewerOrigin)
+    expect(viewerUrl.searchParams.get('url')).toBe('https://trace.platphormnews.com/api/v1/workflows')
+    expect(viewerUrl.searchParams.get('v')).toBe('graph')
     expect(result.json.data.workflows).toEqual([])
   })
 

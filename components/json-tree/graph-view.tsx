@@ -22,12 +22,21 @@ import {
   Info
 } from 'lucide-react'
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/components/ui/tooltip'
+import {
+  formatSecuritySnapshotTime,
+  getSecurityControlTone,
+  type SecurityControlTone,
+  type SecurityControlsSnapshot,
+} from '@/lib/security-controls'
+import { SecurityPresentationGuide } from './security-presentation-guide'
 
 interface GraphViewProps {
   tree: JsonNode | null
   selectedNodeId: string | null
   onSelect: (id: string | null) => void
   className?: string
+  presentationMode?: boolean
+  securitySnapshot?: SecurityControlsSnapshot
 }
 
 interface PositionedNode {
@@ -96,6 +105,52 @@ const TYPE_STYLES = {
     fill: 'rgb(236, 72, 153)',
     fillBg: 'rgba(236, 72, 153, 0.1)'
   },
+}
+
+const SECURITY_CONTROL_STYLES: Record<SecurityControlTone, typeof TYPE_STYLES.string> = {
+  waf: {
+    bg: 'bg-rose-500/10',
+    border: 'border-rose-500/50',
+    text: 'text-rose-500',
+    fill: 'rgb(244, 63, 94)',
+    fillBg: 'rgba(244, 63, 94, 0.12)',
+  },
+  bots: {
+    bg: 'bg-cyan-500/10',
+    border: 'border-cyan-500/50',
+    text: 'text-cyan-500',
+    fill: 'rgb(6, 182, 212)',
+    fillBg: 'rgba(6, 182, 212, 0.12)',
+  },
+  apiGateway: {
+    bg: 'bg-indigo-500/10',
+    border: 'border-indigo-500/50',
+    text: 'text-indigo-500',
+    fill: 'rgb(99, 102, 241)',
+    fillBg: 'rgba(99, 102, 241, 0.12)',
+  },
+  rateLimit: {
+    bg: 'bg-orange-500/10',
+    border: 'border-orange-500/50',
+    text: 'text-orange-500',
+    fill: 'rgb(249, 115, 22)',
+    fillBg: 'rgba(249, 115, 22, 0.12)',
+  },
+}
+
+const SECURITY_CONTROL_LABELS: Record<SecurityControlTone, string> = {
+  waf: 'WAF',
+  bots: 'Bot control',
+  apiGateway: 'API endpoints',
+  rateLimit: 'Rate limit',
+}
+
+const SECURITY_CONTROL_ORDER: SecurityControlTone[] = ['waf', 'bots', 'apiGateway', 'rateLimit']
+const SECURITY_PRESENTATION_MIN_SCALE = 0.3
+
+function getNodeStyle(node: JsonNode) {
+  const tone = getSecurityControlTone(node.path)
+  return tone ? SECURITY_CONTROL_STYLES[tone] : TYPE_STYLES[node.type]
 }
 
 function calculateLayout(
@@ -189,7 +244,9 @@ const GraphNode = memo(function GraphNode({
 }) {
   const { node, x, y, width, height, isCollapsed } = posNode
   const hasChildren = node.children && node.children.length > 0
-  const style = TYPE_STYLES[node.type]
+  const controlTone = getSecurityControlTone(node.path)
+  const style = getNodeStyle(node)
+  const isControlRoot = controlTone === node.key
   const [copied, setCopied] = useState(false)
   
   const displayValue = useMemo(() => {
@@ -305,6 +362,16 @@ const GraphNode = memo(function GraphNode({
         strokeWidth={isSelected ? 2 : 1}
         className="transition-all duration-150"
       />
+
+      {controlTone && (
+        <rect
+          width={isControlRoot ? 6 : 3}
+          height={height}
+          rx={isControlRoot ? 3 : 1.5}
+          fill={style.fill}
+          opacity={isControlRoot ? 1 : 0.65}
+        />
+      )}
       
       {/* Collapse/Expand toggle */}
       {hasChildren && showInteractiveElements && (
@@ -401,8 +468,21 @@ const GraphNode = memo(function GraphNode({
         {node.type}
       </text>
 
+      {isControlRoot && controlTone && (
+        <text
+          x={width - 10}
+          y={height - 5}
+          textAnchor="end"
+          className="text-[7px] font-semibold uppercase tracking-wide"
+          fill={isSelected ? 'rgba(255,255,255,0.9)' : style.fill}
+          style={{ fontFamily: 'var(--font-mono)' }}
+        >
+          {SECURITY_CONTROL_LABELS[controlTone]}
+        </text>
+      )}
+
       {/* Tooltip trigger overlay - invisible but captures hover for tooltip */}
-      <title>{`${node.key}: ${fullValue}\nPath: ${jsonPath}\nType: ${node.type}${hasChildren ? `\nChildren: ${node.children!.length}` : ''}`}</title>
+      <title>{`${node.key}: ${fullValue}\nPath: ${jsonPath}\nType: ${node.type}${controlTone ? `\nSecurity control: ${SECURITY_CONTROL_LABELS[controlTone]}` : ''}${hasChildren ? `\nChildren: ${node.children!.length}` : ''}`}</title>
     </g>
   )
 })
@@ -417,7 +497,7 @@ function GraphEdge({ edge, isHighlighted }: { edge: Edge; isHighlighted: boolean
   const controlOffset = Math.min((endX - startX) * 0.5, 50)
   const pathD = `M ${startX} ${startY} C ${startX + controlOffset} ${startY}, ${endX - controlOffset} ${endY}, ${endX} ${endY}`
   
-  const fromStyle = TYPE_STYLES[edge.from.node.type]
+  const fromStyle = getNodeStyle(edge.from.node)
   
   return (
     <g>
@@ -569,7 +649,9 @@ export const GraphView = memo(function GraphView({
   tree,
   selectedNodeId,
   onSelect,
-  className
+  className,
+  presentationMode = false,
+  securitySnapshot,
 }: GraphViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 })
@@ -580,6 +662,8 @@ export const GraphView = memo(function GraphView({
   const [containerSize, setContainerSize] = useState({ width: 800, height: 600 })
   const [showMiniMap, setShowMiniMap] = useState(true)
   const [copiedPath, setCopiedPath] = useState<string | null>(null)
+  const [presentationTone, setPresentationTone] = useState<SecurityControlTone>('waf')
+  const initializedSecuritySnapshotRef = useRef<string | null>(null)
 
   // Measure container
   useEffect(() => {
@@ -598,6 +682,47 @@ export const GraphView = memo(function GraphView({
     if (!tree) return null
     return calculateLayout(tree, collapsedNodes)
   }, [tree, collapsedNodes])
+
+  const securityLegend = useMemo(() => {
+    if (!layout) return []
+    const present = new Set(
+      layout.nodes
+        .map(({ node }) => getSecurityControlTone(node.path))
+        .filter((tone): tone is SecurityControlTone => tone !== null),
+    )
+    return SECURITY_CONTROL_ORDER.filter(tone => present.has(tone))
+  }, [layout])
+
+  const capturedAt = useMemo(() => {
+    if (!layout) return null
+    const node = layout.nodes.find(({ node }) => node.key === 'capturedAt')?.node
+    return node?.type === 'string' ? String(node.value) : null
+  }, [layout])
+
+  // Keep the live demo readable by folding only the dense API operation list.
+  // The control categories remain expanded and the array is still one click away.
+  useEffect(() => {
+    if (!tree || securityLegend.length === 0) return
+    const snapshotKey = capturedAt || tree.id
+    if (initializedSecuritySnapshotRef.current === snapshotKey) return
+
+    const denseControlArrays = new Set<string>()
+    const pending = [tree]
+    while (pending.length > 0) {
+      const node = pending.pop()!
+      if (
+        node.type === 'array' &&
+        (node.children?.length ?? 0) > 5 &&
+        getSecurityControlTone(node.path) === 'apiGateway'
+      ) {
+        denseControlArrays.add(node.id)
+      }
+      pending.push(...(node.children ?? []))
+    }
+
+    initializedSecuritySnapshotRef.current = snapshotKey
+    if (denseControlArrays.size > 0) setCollapsedNodes(denseControlArrays)
+  }, [capturedAt, securityLegend.length, tree])
 
   // Find nodes on path to selected
   const pathNodeIds = useMemo(() => {
@@ -707,6 +832,24 @@ export const GraphView = memo(function GraphView({
     })
   }, [layout, containerSize])
 
+  useEffect(() => {
+    if (!presentationMode || !layout) return
+    const target = layout.nodes.find(({ node }) => node.key === presentationTone)
+    if (!target) return
+
+    const timer = window.setTimeout(() => {
+      const scale = 0.82
+      setTransform({
+        x: containerSize.width * 0.68 - (target.x + target.width / 2) * scale,
+        y: containerSize.height * 0.5 - (target.y + target.height / 2) * scale,
+        scale,
+      })
+      onSelect(target.node.id)
+    }, 80)
+
+    return () => window.clearTimeout(timer)
+  }, [containerSize, layout, onSelect, presentationMode, presentationTone])
+
   const resetView = useCallback(() => {
     setTransform({ x: 50, y: 50, scale: 1 })
     setCollapsedNodes(new Set())
@@ -731,11 +874,27 @@ export const GraphView = memo(function GraphView({
 
   // Auto-fit on tree change
   useEffect(() => {
+    if (presentationMode) return
     if (layout && containerSize.width > 0 && containerSize.height > 0) {
-      const timer = setTimeout(fitToScreen, 50)
+      const timer = setTimeout(() => {
+        const padding = 80
+        const scaleX = (containerSize.width - padding * 2) / layout.width
+        const scaleY = (containerSize.height - padding * 2) / layout.height
+        const fittedScale = Math.min(scaleX, scaleY, 1.2)
+
+        if (securityLegend.length > 0 && fittedScale < SECURITY_PRESENTATION_MIN_SCALE) {
+          setTransform({
+            x: (containerSize.width - layout.width * SECURITY_PRESENTATION_MIN_SCALE) / 2,
+            y: (containerSize.height - layout.height * SECURITY_PRESENTATION_MIN_SCALE) / 2,
+            scale: SECURITY_PRESENTATION_MIN_SCALE,
+          })
+        } else {
+          fitToScreen()
+        }
+      }, 50)
       return () => clearTimeout(timer)
     }
-  }, [tree?.id, layout, containerSize.width, containerSize.height, fitToScreen])
+  }, [tree?.id, layout, containerSize.width, containerSize.height, fitToScreen, presentationMode, securityLegend.length])
 
   useEffect(() => {
     const handleGlobalMouseUp = () => setIsDragging(false)
@@ -829,6 +988,40 @@ export const GraphView = memo(function GraphView({
             ))}
           </g>
         </svg>
+
+        {presentationMode && securitySnapshot && securityLegend.length > 0 ? (
+          <SecurityPresentationGuide
+            activeTone={presentationTone}
+            availableTones={securityLegend}
+            snapshot={securitySnapshot}
+            onToneChange={setPresentationTone}
+          />
+        ) : securityLegend.length > 0 && (
+          <div className="absolute top-4 left-4 z-20 max-w-sm rounded-xl border border-border bg-background/95 p-3 shadow-xl backdrop-blur-md">
+            <div className="flex items-center gap-2">
+              <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.65)]" />
+              <p className="text-xs font-semibold text-foreground">Cloudflare Security Control Graph</p>
+            </div>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Live server-side snapshot with semantic control highlighting
+              {capturedAt ? ` · ${formatSecuritySnapshotTime(capturedAt)}` : ''}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-1.5" aria-label="Security control legend">
+              {securityLegend.map(tone => (
+                <span
+                  key={tone}
+                  className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/50 px-2 py-1 text-[9px] font-medium text-foreground"
+                >
+                  <span
+                    className="h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: SECURITY_CONTROL_STYLES[tone].fill }}
+                  />
+                  {SECURITY_CONTROL_LABELS[tone]}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Copied notification */}
         {copiedPath && (

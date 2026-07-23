@@ -25,7 +25,7 @@ const endpoints = [
   {
     method: 'POST',
     path: '/api/v1/fetch-url',
-    description: 'Load public JSON from a trusted *.platphormnews.com HTTPS URL',
+    description: 'Load public JSON from the PlatPhorm network or an approved demo origin',
     body: `{
   "url": "https://trace.platphormnews.com/api/v1/workflows"
 }`,
@@ -130,7 +130,7 @@ const endpoints = [
 const mcpTools = [
   {
     name: 'fetch_json_url',
-    description: 'Fetch a trusted PlatPhormNews JSON link and return its graph-view handoff URL',
+    description: 'Fetch a public JSON link from an approved origin and return its graph-view handoff URL',
     params: [
       { name: 'url', type: 'string', required: true }
     ]

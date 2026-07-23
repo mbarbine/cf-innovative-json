@@ -36,7 +36,7 @@ const tool = (name: string, description: string, properties: Record<string, unkn
 })
 
 export const MCP_TOOLS = [
-  tool('fetch_json_url', 'Fetch and inspect a public JSON link from a trusted *.platphormnews.com host and return its graph-view handoff URL.', { url: { type: 'string', format: 'uri' } }, ['url']),
+  tool('fetch_json_url', 'Fetch and inspect public JSON from the PlatPhorm network or an explicitly approved demo origin and return its graph-view handoff URL.', { url: { type: 'string', format: 'uri' } }, ['url']),
   tool('parse_json', 'Parse JSON and return validity, parsed data, and stats.', { json: { type: 'string' } }, ['json']),
   tool('format_json', 'Format valid JSON with indentation.', { json: { type: 'string' }, indent: { type: 'number', default: 2 } }, ['json']),
   tool('minify_json', 'Minify valid JSON.', { json: { type: 'string' } }, ['json']),

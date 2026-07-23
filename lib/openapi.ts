@@ -126,7 +126,7 @@ export const openApiSpec = {
     '/api/v1/fetch-url': {
       post: {
         tags: ['JSON Tools'],
-        summary: 'Fetch bounded JSON from a trusted PlatPhormNews HTTPS URL and return a graph-view handoff link.',
+        summary: 'Fetch bounded JSON from the PlatPhorm network or an approved demo origin and return a graph-view handoff link.',
         requestBody: {
           required: true,
           content: {

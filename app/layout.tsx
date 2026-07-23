@@ -2,7 +2,56 @@ import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { ThemeProvider } from '@/components/theme-provider'
+import { getDeploymentConfig, getSeoPolicy, shouldRenderVercelAnalytics } from '@/lib/deployment'
 import './globals.css'
+
+const deployment = getDeploymentConfig()
+const seo = getSeoPolicy()
+const discoveryStructuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'Organization',
+      '@id': `${deployment.appUrl}/#organization`,
+      name: 'PlatPhormNews',
+      url: 'https://platphormnews.com',
+    },
+    {
+      '@type': 'WebSite',
+      '@id': `${deployment.appUrl}/#website`,
+      url: deployment.appUrl,
+      name: 'JSON Tree + PlatPhorm Schema Registry',
+      publisher: { '@id': `${deployment.appUrl}/#organization` },
+      datePublished: '2026-07-22',
+      dateModified: '2026-07-22',
+    },
+    {
+      '@type': 'FAQPage',
+      '@id': `${deployment.appUrl}/#faq`,
+      url: `${deployment.appUrl}/faq`,
+      name: 'JSON Tree frequently asked questions',
+      isPartOf: { '@id': `${deployment.appUrl}/#website` },
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: 'What can I inspect with JSON Tree?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Inspect, search, format, validate, and visualize public JSON as a tree or graph.',
+          },
+        },
+        {
+          '@type': 'Question',
+          name: 'Does JSON Tree expose machine-readable interfaces?',
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: 'Yes. It publishes OpenAPI, MCP, schema registry, sitemap, feed, and LLM discovery surfaces.',
+          },
+        },
+      ],
+    },
+  ],
+}
 
 const geistSans = Geist({ 
   subsets: ["latin"],
@@ -14,7 +63,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'),
+  metadataBase: new URL(seo.canonicalUrl),
   title: {
     default: 'JSON Tree + PlatPhorm Schema Registry',
     template: '%s | JSON Tree + PlatPhorm Schema Registry'
@@ -56,11 +105,11 @@ export const metadata: Metadata = {
     creator: '@platphormnews',
   },
   robots: {
-    index: true,
-    follow: true,
+    index: seo.index,
+    follow: seo.follow,
     googleBot: {
-      index: true,
-      follow: true,
+      index: seo.index,
+      follow: seo.follow,
       'max-video-preview': -1,
       'max-image-preview': 'large',
       'max-snippet': -1,
@@ -75,7 +124,7 @@ export const metadata: Metadata = {
   },
   manifest: '/manifest.webmanifest',
   alternates: {
-    canonical: '/',
+    canonical: seo.canonicalUrl,
     types: {
       'application/rss+xml': '/feed.xml',
     },
@@ -103,6 +152,15 @@ export default function RootLayout({
       <head>
         <link rel="alternate" type="application/rss+xml" title="JSON Tree RSS Feed" href="/feed.xml" />
         <script
+          dangerouslySetInnerHTML={{
+            // OpenNext's Cloudflare bundle preserves next-themes' esbuild name
+            // helper call in the inline bootstrap without emitting the helper.
+            // Function names are diagnostic only here, so a small identity shim
+            // keeps the theme bootstrap working without changing its behavior.
+            __html: 'globalThis.__name ||= ((target) => target);',
+          }}
+        />
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
@@ -111,7 +169,7 @@ export default function RootLayout({
               "name": "JSON Tree + PlatPhorm Schema Registry",
               "alternateName": "JSON Tree",
               "description": "Public JSON tree viewer, formatter, validator, schema validation tool, JSON-LD contract viewer, REST API, and MCP server.",
-              "url": process.env.NEXT_PUBLIC_APP_URL || "https://json.platphormnews.com",
+              "url": deployment.canonicalUrl,
               "applicationCategory": "DeveloperApplication",
               "operatingSystem": "Any",
               "version": "1.4.0",
@@ -156,6 +214,10 @@ export default function RootLayout({
             })
           }}
         />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(discoveryStructuredData) }}
+        />
       </head>
       <body className="font-sans antialiased">
         <ThemeProvider
@@ -166,7 +228,7 @@ export default function RootLayout({
         >
           {children}
         </ThemeProvider>
-        <Analytics />
+        {shouldRenderVercelAnalytics() ? <Analytics /> : null}
       </body>
     </html>
   )

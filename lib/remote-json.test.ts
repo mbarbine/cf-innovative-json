@@ -19,6 +19,17 @@ describe('trusted remote JSON', () => {
     expect(fetch).toHaveBeenCalledWith(expect.any(URL), expect.objectContaining({ redirect: 'manual' }))
   })
 
+  it('accepts the approved Innovative Future Solutions demo origin', async () => {
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('{"ok":true}', {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    })))
+
+    const result = await fetchTrustedJsonUrl('https://innovativefuturesolutions.com/api/health')
+
+    expect(result.parsed).toEqual({ ok: true })
+  })
+
   it('rejects non-HTTPS and non-PlatPhorm hosts before fetching', async () => {
     const fetchMock = vi.fn()
     vi.stubGlobal('fetch', fetchMock)

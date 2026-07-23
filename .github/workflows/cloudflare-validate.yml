@@ -1,0 +1,71 @@
+name: Cloudflare validate
+
+on:
+  pull_request:
+  push:
+    branches:
+      - migration/cloudflare-json-canary
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOYMENT_PROVIDER: cloudflare
+      DEPLOYMENT_ENVIRONMENT: canary
+      PLATPHORM_CANARY: "true"
+      NEXT_PUBLIC_APP_URL: https://json.innovativefuturesolutions.com
+      NEXT_PUBLIC_CANONICAL_URL: https://json.platphormnews.com
+      PLATPHORM_TRACE_BASE_URL: https://trace.platphormnews.com
+      PLATPHORM_REQUIRE_API_KEY: "false"
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Install pinned pnpm
+        run: corepack enable && corepack prepare pnpm@10.33.2 --activate
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm cf:build
+
+      - name: Report compressed Worker size
+        run: |
+          mkdir -p .wrangler
+          pnpm exec wrangler deploy --env="" --dry-run --outdir .wrangler/dry-run --keep-vars 2>&1 | tee .wrangler/worker-size.txt
+
+      - name: Run local workerd smoke
+        run: |
+          pnpm exec wrangler dev --port 8787 --var PLATPHORM_API_KEY:ci-local-only >.wrangler/workerd.log 2>&1 &
+          worker_pid=$!
+          trap 'kill "$worker_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:8787/api/health >/dev/null; then break; fi
+            if [ "$attempt" = 30 ]; then cat .wrangler/workerd.log; exit 1; fi
+            sleep 1
+          done
+          CLOUDFLARE_CANARY_URL=http://127.0.0.1:8787 \
+          PRODUCTION_JSON_URL=http://127.0.0.1:8787 \
+          SMOKE_MODE=local \
+          SMOKE_REPORT_PATH=.wrangler/local-smoke-report.json \
+          node scripts/smoke-cloudflare.mjs
+
+      - name: Upload nonsecret validation reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: cloudflare-validation-reports
+          path: |
+            .wrangler/worker-size.txt
+            .wrangler/local-smoke-report.json
+          if-no-files-found: warn
+          retention-days: 14

@@ -15,9 +15,15 @@ import { PathBreadcrumb } from './path-breadcrumb'
 import { DiffView } from './diff-view'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { cn } from '@/lib/utils'
-import { loadLocalJsonDraft, saveLocalJsonDraft } from '@/lib/local-drafts'
+import { saveLocalJsonDraft } from '@/lib/local-drafts'
+import type { SecurityControlsSnapshot } from '@/lib/security-controls'
 
-export function JsonTree() {
+interface JsonTreeProps {
+  initialSecurityControls: SecurityControlsSnapshot
+  presentationMode?: boolean
+}
+
+export function JsonTree({ initialSecurityControls, presentationMode = false }: JsonTreeProps) {
   const {
     rawJson,
     setRawJson,
@@ -46,9 +52,16 @@ export function JsonTree() {
   const [compareJson, setCompareJson] = useState('')
   const [selectedPath, setSelectedPath] = useState<string[]>([])
   const [draftReady, setDraftReady] = useState(false)
-  const [draftStatus, setDraftStatus] = useState('Local draft')
-  const [draftTooltip, setDraftTooltip] = useState('Drafts are stored in browser IndexedDB only. Nothing is saved server-side.')
-  const handoffRef = useRef<{ sourceUrl: string; status: 'loading' | 'loaded' | 'failed'; error?: string } | null>(null)
+  const [draftStatus, setDraftStatus] = useState(
+    initialSecurityControls.live ? 'Live Cloudflare controls' : 'Security demo fallback',
+  )
+  const [draftTooltip, setDraftTooltip] = useState(initialSecurityControls.message)
+  const skipInitialPersistence = useRef(true)
+  const handoffRef = useRef<{
+    sourceUrl: string
+    status: 'loading' | 'loaded' | 'failed'
+    error?: string
+  } | null>(null)
   
   useEffect(() => {
     const shared = parseUrlParams()
@@ -81,8 +94,14 @@ export function JsonTree() {
         })
         .catch((error) => {
           if (cancelled) return
-          const message = error instanceof Error ? error.message : 'The trusted JSON handoff could not be loaded.'
-          handoffRef.current = { sourceUrl: source.sourceUrl, status: 'failed', error: message }
+          const message = error instanceof Error
+            ? error.message
+            : 'The trusted JSON handoff could not be loaded.'
+          handoffRef.current = {
+            sourceUrl: source.sourceUrl,
+            status: 'failed',
+            error: message,
+          }
           setDraftStatus('Handoff degraded')
           setDraftTooltip(message)
         })
@@ -95,41 +114,54 @@ export function JsonTree() {
       }
     }
 
-    loadLocalJsonDraft()
-      .then((draft) => {
-        if (draft?.content) {
-          setRawJson(draft.content)
-          setDraftStatus('Local draft')
-          setDraftTooltip(`Restored from browser IndexedDB. Last saved ${new Date(draft.updatedAt).toLocaleString()}.`)
-        } else {
-          setDraftStatus('Labeled sample')
-          setDraftTooltip('The editor starts with a labeled public sample. Edits are saved to browser IndexedDB only.')
-        }
-      })
-      .catch(() => {
-        setDraftStatus('Degraded storage')
-        setDraftTooltip('IndexedDB is unavailable. The editor still works, but local draft restore may not persist after reload.')
-      })
-      .finally(() => setDraftReady(true))
-  }, [setRawJson, setViewMode])
+    setRawJson(initialSecurityControls.json)
+    setViewMode('graph')
+    setDraftStatus(
+      initialSecurityControls.live ? 'Live Cloudflare controls' : 'Security demo fallback',
+    )
+    const capture = initialSecurityControls.capturedAt
+      ? ` Snapshot captured ${new Date(initialSecurityControls.capturedAt).toLocaleString()}.`
+      : ''
+    setDraftTooltip(
+      `${initialSecurityControls.message}${capture} Source: ${initialSecurityControls.sourceUrl}`,
+    )
+    setDraftReady(true)
+  }, [initialSecurityControls, setRawJson, setViewMode])
 
   useEffect(() => {
     if (!draftReady) return
+    if (skipInitialPersistence.current) {
+      skipInitialPersistence.current = false
+      return
+    }
     const timeout = window.setTimeout(() => {
       saveLocalJsonDraft(rawJson)
         .then((draft) => {
           if (handoffRef.current?.status === 'loaded') {
             setDraftStatus('URL handoff')
-            setDraftTooltip(`Loaded from ${handoffRef.current.sourceUrl}. A recovery copy was saved in this browser only.`)
+            setDraftTooltip(
+              `Loaded from ${handoffRef.current.sourceUrl}. A recovery copy was saved in this browser only.`,
+            )
             return
           }
           if (handoffRef.current?.status === 'failed') {
             setDraftStatus('Handoff degraded')
-            setDraftTooltip(handoffRef.current.error || 'The trusted JSON handoff could not be loaded.')
+            setDraftTooltip(
+              handoffRef.current.error || 'The trusted JSON handoff could not be loaded.',
+            )
             return
           }
-          setDraftStatus('Local draft')
-          setDraftTooltip(`Saved locally in browser IndexedDB at ${new Date(draft.updatedAt).toLocaleTimeString()}. No server persistence is claimed.`)
+          const isUneditedLiveSnapshot = rawJson === initialSecurityControls.json
+          setDraftStatus(
+            isUneditedLiveSnapshot && initialSecurityControls.live
+              ? 'Live Cloudflare controls'
+              : 'Local draft',
+          )
+          setDraftTooltip(
+            isUneditedLiveSnapshot && initialSecurityControls.live
+              ? `${initialSecurityControls.message} Source: ${initialSecurityControls.sourceUrl}`
+              : `Saved locally in browser IndexedDB at ${new Date(draft.updatedAt).toLocaleTimeString()}. No server persistence is claimed.`,
+          )
         })
         .catch(() => {
           setDraftStatus('Degraded storage')
@@ -138,7 +170,7 @@ export function JsonTree() {
     }, 600)
 
     return () => window.clearTimeout(timeout)
-  }, [rawJson, draftReady])
+  }, [rawJson, draftReady, initialSecurityControls])
   
   // Update selected path when node is selected
   useEffect(() => {
@@ -267,7 +299,10 @@ export function JsonTree() {
 
       <ResizablePanelGroup direction="horizontal" className="flex-1">
         {/* Editor Panel */}
-        <ResizablePanel defaultSize={isDiffOpen ? 30 : 40} minSize={20}>
+        <ResizablePanel
+          defaultSize={isDiffOpen ? 30 : presentationMode ? 34 : 40}
+          minSize={20}
+        >
           <JsonEditor
             value={rawJson}
             onChange={setRawJson}
@@ -282,7 +317,10 @@ export function JsonTree() {
         <ResizableHandle withHandle />
 
         {/* View Panel */}
-        <ResizablePanel defaultSize={isDiffOpen ? 40 : 60} minSize={25}>
+        <ResizablePanel
+          defaultSize={isDiffOpen ? 40 : presentationMode ? 66 : 60}
+          minSize={25}
+        >
           <div className="flex flex-col h-full">
             {/* Path Breadcrumb */}
             {selectedPath.length > 0 && (
@@ -308,6 +346,8 @@ export function JsonTree() {
                   tree={tree}
                   selectedNodeId={selectedNodeId}
                   onSelect={selectNode}
+                  presentationMode={presentationMode}
+                  securitySnapshot={initialSecurityControls}
                 />
               )}
               {viewMode === 'raw' && (
@@ -322,8 +362,12 @@ export function JsonTree() {
               )}
             </div>
             
-            <StatsPanel stats={stats} />
-            <SchemaRegistryPanel rawJson={rawJson} isValid={isValid} />
+            {!presentationMode && (
+              <>
+                <StatsPanel stats={stats} />
+                <SchemaRegistryPanel rawJson={rawJson} isValid={isValid} />
+              </>
+            )}
           </div>
         </ResizablePanel>
         

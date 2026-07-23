@@ -1,4 +1,5 @@
 import { calculateJsonStats, isSafeUrl } from './api-utils'
+import { isTrustedPublicJsonHost, TRUSTED_PUBLIC_JSON_SCOPE } from './trusted-json-hosts'
 
 export const DEFAULT_REMOTE_JSON_MAX_BYTES = 5 * 1024 * 1024
 export const MCP_REMOTE_JSON_MAX_BYTES = 1024 * 1024
@@ -25,13 +26,8 @@ export type RemoteJsonResult = {
   contentType: string | null
 }
 
-export function isTrustedPlatphormHost(hostname: string): boolean {
-  const normalized = hostname.toLowerCase().replace(/\.$/, '')
-  return normalized === 'platphormnews.com' || normalized.endsWith('.platphormnews.com')
-}
-
 export function createJsonGraphUrl(sourceUrl: string): string {
-  const viewer = new URL('https://json.platphormnews.com')
+  const viewer = new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com')
   viewer.searchParams.set('url', sourceUrl)
   viewer.searchParams.set('v', 'graph')
   return viewer.toString()
@@ -51,10 +47,10 @@ export async function fetchTrustedJsonUrl(
   if (parsedUrl.protocol !== 'https:') {
     throw new RemoteJsonError('UNSUPPORTED_PROTOCOL', 'Only HTTPS URLs are supported', 400)
   }
-  if (!isTrustedPlatphormHost(parsedUrl.hostname)) {
+  if (!isTrustedPublicJsonHost(parsedUrl.hostname)) {
     throw new RemoteJsonError(
       'UNTRUSTED_HOST',
-      'Server-side URL import is limited to trusted *.platphormnews.com hosts.',
+      `Server-side URL import is limited to ${TRUSTED_PUBLIC_JSON_SCOPE}.`,
       403,
       { host: parsedUrl.hostname },
     )

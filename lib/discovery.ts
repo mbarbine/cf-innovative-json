@@ -237,7 +237,12 @@ export function buildLlmsIndex() {
     ],
     resources: ['json://schemas', 'json://schema/{slug}', 'json://schema-pack', 'json://examples', 'json://universes', 'json://realms', 'json://realm/{id}/items', 'json://openapi', 'json://llms', 'json://trust-policy'],
     prompts: ['explain_json', 'fix_invalid_json', 'generate_json_schema', 'validate_json_contract', 'summarize_json_tree', 'explain_schema', 'generate_jsonld', 'create_schema_registry_entry', 'human_machine_json_handoff'],
-    trustedDomains: ['*.platphormnews.com'],
+    trustedDomains: [
+      '*.platphormnews.com',
+      'innovativefuturesolutions.com',
+      'www.innovativefuturesolutions.com',
+      'platphorm-json-canary.barbine-michael.workers.dev',
+    ],
     routeStandard: routeCompliance,
     integrations: {
       trace: 'trace-linked response metadata and headers',
@@ -279,7 +284,8 @@ export function buildTrustPolicy() {
     schemaRegistryPolicy: 'Public bundled schemas are readable. Registry mutation is future protected.',
     jsonDataExposurePolicy: 'Pasted JSON remains browser-local unless sent to a public-safe API operation selected by the user.',
     tracePropagation: 'W3C traceparent/tracestate and safe PlatPhorm trace headers are accepted and emitted.',
-    vercelMetadata: 'Safe Vercel headers are captured in response metadata with IP values hashed.',
+    vercelMetadata: 'The backward-compatible Vercel metadata field remains available, with IP values hashed.',
+    platformMetadata: 'Provider-neutral request metadata captures only nonsecret operational fields and hashed IP-derived values.',
     backendModelScaffolding: getModelAdapterStatus(),
     securityContact: 'security@platphormnews.com',
   }

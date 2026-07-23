@@ -93,7 +93,7 @@ export function Header() {
 
         <Button variant="ghost" size="icon" asChild>
           <a 
-            href="https://github.com/mbarbine/json-tree-webby" 
+            href="https://github.com/mbarbine/cf-innovative-json" 
             target="_blank" 
             rel="noopener noreferrer"
             aria-label="GitHub"

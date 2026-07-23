@@ -1,4 +1,6 @@
-export const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://json.platphormnews.com'
+import { getDeploymentConfig } from './deployment'
+
+export const BASE_URL = getDeploymentConfig().canonicalUrl
 export const SERVICE_ID = 'json'
 export const SERVICE_DOMAIN = 'json.platphormnews.com'
 export const PRODUCT_NAME = 'JSON Tree + PlatPhorm Schema Registry'
@@ -7,7 +9,7 @@ export const APP_VERSION = '1.4.0'
 export const PLATFORM_SOURCE_SITE = 'json'
 
 export const TRUST_POLICY_LINE =
-  'Public-safe JSON editing, formatting, validation, schema browsing, schema validation, local non-sensitive JSON draft persistence, read-only MCP introspection, RSS/feed consumption, trusted-domain discovery, standard route compliance, Vercel metadata capture, backend model scaffolding, and trace-linked JSON operations are intentionally supported for public use. PLATPHORM_API_KEY support is scaffolded for future protected backend services, registry mutation, private validation, sync, test-triggering, reporting, administrative actions, and sensitive operations.'
+  'Public-safe JSON editing, formatting, validation, schema browsing, schema validation, local non-sensitive JSON draft persistence, read-only MCP introspection, RSS/feed consumption, trusted-domain discovery, standard route compliance, provider-neutral request metadata capture, backend model scaffolding, and trace-linked JSON operations are intentionally supported for public use. PLATPHORM_API_KEY support is scaffolded for future protected backend services, registry mutation, private validation, sync, test-triggering, reporting, administrative actions, and sensitive operations.'
 
 export type PlatformRoute = {
   path: string
@@ -100,7 +102,13 @@ export const API_ROUTES: PlatformRoute[] = [
   { path: '/api/v1/schema-pack', method: 'GET', publicSafe: true, implemented: true, category: 'api', description: 'Read schema pack metadata and files.' },
   { path: '/api/v1/jsonld', method: 'GET', publicSafe: true, implemented: true, category: 'api', description: 'Read JSON-LD structured data artifacts.' },
   { path: '/api/v1/jsonld/validate', method: 'POST', publicSafe: true, implemented: true, category: 'api', description: 'Validate JSON-LD structure locally.' },
-  { path: '/api/v1/fetch-url', method: 'POST', publicSafe: true, implemented: true, category: 'api', description: 'Fetch bounded public JSON from a trusted *.platphormnews.com HTTPS URL.' },
+  { path: '/api/v1/fetch-url', method: 'POST', publicSafe: true, implemented: true, category: 'api', description: 'Fetch bounded public JSON from the PlatPhorm network or an explicitly approved demo origin.' },
+  { path: '/api/v1/diff', method: 'POST', publicSafe: true, implemented: true, category: 'api', description: 'Compare two valid JSON documents and report structural changes.' },
+  { path: '/api/v1/mcp', method: 'GET', publicSafe: true, implemented: true, category: 'mcp', description: 'Versioned alias for read-only MCP metadata and usage.' },
+  { path: '/api/v1/mcp', method: 'POST', publicSafe: true, implemented: true, category: 'mcp', description: 'Versioned alias for public-safe JSON-RPC MCP tooling.' },
+  { path: '/api/mcp/register', method: 'GET', publicSafe: true, implemented: true, category: 'mcp', description: 'Read the future protected MCP registration contract.' },
+  { path: '/api/mcp/register', method: 'POST', publicSafe: false, implemented: true, category: 'mcp', description: 'Protected, non-mutating MCP registration scaffold.' },
+  { path: '/api/mcp/sse', method: 'GET', publicSafe: true, implemented: true, category: 'mcp', description: 'Bounded server-sent-event transport with connection and keepalive events.' },
   { path: '/api/cron/refresh', method: 'POST', publicSafe: false, implemented: true, category: 'cron', description: 'Bounded metadata refresh for Vercel cron or PLATPHORM_API_KEY.' },
 ]
 
@@ -120,9 +128,14 @@ export const DISCOVERY_ROUTES: PlatformRoute[] = [
   { path: '/.well-known/mcp.json', method: 'GET', publicSafe: true, implemented: true, category: 'discovery', description: 'MCP discovery metadata.' },
   { path: '/.well-known/agents.json', method: 'GET', publicSafe: true, implemented: true, category: 'discovery', description: 'Agent discovery metadata.' },
   { path: '/.well-known/ai-plugin.json', method: 'GET', publicSafe: true, implemented: true, category: 'discovery', description: 'AI plugin discovery metadata.' },
+  { path: '/.well-known/llms.txt', method: 'GET', publicSafe: true, implemented: true, category: 'discovery', description: 'Well-known alias for the compact LLM discovery guide.' },
+  { path: '/.well-known/llms-full.txt', method: 'GET', publicSafe: true, implemented: true, category: 'discovery', description: 'Well-known alias for the full LLM discovery guide.' },
+  { path: '/.well-known/llms-index.json', method: 'GET', publicSafe: true, implemented: true, category: 'discovery', description: 'Well-known alias for the machine-readable LLM discovery index.' },
   { path: '/.well-known/security.txt', method: 'GET', publicSafe: true, implemented: true, category: 'discovery', description: 'Security contact policy.' },
   { path: '/.well-known/trust.json', method: 'GET', publicSafe: true, implemented: true, category: 'discovery', description: 'Trust and data exposure policy.' },
   { path: '/.well-known/platphorm.json', method: 'GET', publicSafe: true, implemented: true, category: 'discovery', description: 'PlatPhorm realm manifest.' },
+  { path: '/favicon.ico', method: 'GET', publicSafe: true, implemented: true, category: 'discovery', description: 'Application icon.' },
+  { path: '/opengraph-image', method: 'GET', publicSafe: true, implemented: true, category: 'discovery', description: 'Redirect to the bundled social preview image.' },
 ]
 
 export const V0_ROUTES: PlatformRoute[] = [

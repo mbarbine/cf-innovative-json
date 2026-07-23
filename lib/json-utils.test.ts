@@ -1,8 +1,6 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import {
   getValueType,
-  generateNodeId,
-  resetNodeIdCounter,
   parseJsonToTree,
   calculateStats,
   searchTree,
@@ -16,10 +14,6 @@ import {
 } from './json-utils'
 
 describe('json-utils', () => {
-  beforeEach(() => {
-    resetNodeIdCounter()
-  })
-
   describe('getValueType', () => {
     it('returns null for null', () => expect(getValueType(null)).toBe('null'))
     it('returns array for arrays', () => expect(getValueType([1, 2])).toBe('array'))
@@ -27,13 +21,6 @@ describe('json-utils', () => {
     it('returns string for strings', () => expect(getValueType('hello')).toBe('string'))
     it('returns number for numbers', () => expect(getValueType(42)).toBe('number'))
     it('returns boolean for booleans', () => expect(getValueType(true)).toBe('boolean'))
-  })
-
-  describe('generateNodeId', () => {
-    it('generates sequential ids', () => {
-      expect(generateNodeId()).toBe('node-1')
-      expect(generateNodeId()).toBe('node-2')
-    })
   })
 
   describe('parseJsonToTree', () => {
@@ -57,6 +44,17 @@ describe('json-utils', () => {
       expect(tree.children?.[0].value).toBe(1)
       expect(tree.children?.[1].key).toBe('1')
       expect(tree.children?.[1].value).toBe('two')
+    })
+
+    it('keeps node ID sequences request-local under concurrent parsing', async () => {
+      const documents = Array.from({ length: 12 }, (_, index) => ({ index, nested: { value: index } }))
+      const trees = await Promise.all(documents.map(async (document) => parseJsonToTree(document)))
+
+      for (const tree of trees) {
+        expect(tree.id).toBe('node-1')
+        expect(tree.children?.map((child) => child.id)).toEqual(['node-2', 'node-3'])
+        expect(tree.children?.[1].children?.[0].id).toBe('node-4')
+      }
     })
   })
 
