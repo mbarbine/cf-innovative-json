@@ -237,7 +237,12 @@ export function buildLlmsIndex() {
     ],
     resources: ['json://schemas', 'json://schema/{slug}', 'json://schema-pack', 'json://examples', 'json://universes', 'json://realms', 'json://realm/{id}/items', 'json://openapi', 'json://llms', 'json://trust-policy'],
     prompts: ['explain_json', 'fix_invalid_json', 'generate_json_schema', 'validate_json_contract', 'summarize_json_tree', 'explain_schema', 'generate_jsonld', 'create_schema_registry_entry', 'human_machine_json_handoff'],
-    trustedDomains: ['*.platphormnews.com'],
+    trustedDomains: [
+      '*.platphormnews.com',
+      'innovativefuturesolutions.com',
+      'www.innovativefuturesolutions.com',
+      'platphorm-json-canary.barbine-michael.workers.dev',
+    ],
     routeStandard: routeCompliance,
     integrations: {
       trace: 'trace-linked response metadata and headers',

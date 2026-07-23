@@ -102,7 +102,7 @@ export const API_ROUTES: PlatformRoute[] = [
   { path: '/api/v1/schema-pack', method: 'GET', publicSafe: true, implemented: true, category: 'api', description: 'Read schema pack metadata and files.' },
   { path: '/api/v1/jsonld', method: 'GET', publicSafe: true, implemented: true, category: 'api', description: 'Read JSON-LD structured data artifacts.' },
   { path: '/api/v1/jsonld/validate', method: 'POST', publicSafe: true, implemented: true, category: 'api', description: 'Validate JSON-LD structure locally.' },
-  { path: '/api/v1/fetch-url', method: 'POST', publicSafe: true, implemented: true, category: 'api', description: 'Fetch bounded public JSON from a trusted *.platphormnews.com HTTPS URL.' },
+  { path: '/api/v1/fetch-url', method: 'POST', publicSafe: true, implemented: true, category: 'api', description: 'Fetch bounded public JSON from the PlatPhorm network or an explicitly approved demo origin.' },
   { path: '/api/v1/diff', method: 'POST', publicSafe: true, implemented: true, category: 'api', description: 'Compare two valid JSON documents and report structural changes.' },
   { path: '/api/v1/mcp', method: 'GET', publicSafe: true, implemented: true, category: 'mcp', description: 'Versioned alias for read-only MCP metadata and usage.' },
   { path: '/api/v1/mcp', method: 'POST', publicSafe: true, implemented: true, category: 'mcp', description: 'Versioned alias for public-safe JSON-RPC MCP tooling.' },

@@ -6,6 +6,7 @@ import {
   loadSecurityControlsSnapshot,
   SECURITY_CONTROLS_SOURCE_URL,
 } from './security-controls'
+import { SECURITY_PRESENTATION_STEPS } from '@/components/json-tree/security-presentation-guide'
 
 describe('security controls demo source', () => {
   it('defaults the canary experience to graph mode', () => {
@@ -18,6 +19,16 @@ describe('security controls demo source', () => {
     expect(getSecurityControlTone(['root', 'data', 'apiGateway', 'operations', '0'])).toBe('apiGateway')
     expect(getSecurityControlTone(['root', 'data', 'rateLimit', 'policy'])).toBe('rateLimit')
     expect(getSecurityControlTone(['root', 'data', 'capturedAt'])).toBeNull()
+  })
+
+  it('keeps the guided demo in the intended security-control order', () => {
+    expect(SECURITY_PRESENTATION_STEPS.map(step => step.tone)).toEqual([
+      'waf',
+      'bots',
+      'apiGateway',
+      'rateLimit',
+    ])
+    expect(SECURITY_PRESENTATION_STEPS.every(step => step.proof.length > 0)).toBe(true)
   })
 
   it('formats a valid live snapshot for the graph', async () => {

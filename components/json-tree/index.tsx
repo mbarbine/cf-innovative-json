@@ -20,9 +20,10 @@ import type { SecurityControlsSnapshot } from '@/lib/security-controls'
 
 interface JsonTreeProps {
   initialSecurityControls: SecurityControlsSnapshot
+  presentationMode?: boolean
 }
 
-export function JsonTree({ initialSecurityControls }: JsonTreeProps) {
+export function JsonTree({ initialSecurityControls, presentationMode = false }: JsonTreeProps) {
   const {
     rawJson,
     setRawJson,
@@ -298,7 +299,10 @@ export function JsonTree({ initialSecurityControls }: JsonTreeProps) {
 
       <ResizablePanelGroup direction="horizontal" className="flex-1">
         {/* Editor Panel */}
-        <ResizablePanel defaultSize={isDiffOpen ? 30 : 40} minSize={20}>
+        <ResizablePanel
+          defaultSize={isDiffOpen ? 30 : presentationMode ? 34 : 40}
+          minSize={20}
+        >
           <JsonEditor
             value={rawJson}
             onChange={setRawJson}
@@ -313,7 +317,10 @@ export function JsonTree({ initialSecurityControls }: JsonTreeProps) {
         <ResizableHandle withHandle />
 
         {/* View Panel */}
-        <ResizablePanel defaultSize={isDiffOpen ? 40 : 60} minSize={25}>
+        <ResizablePanel
+          defaultSize={isDiffOpen ? 40 : presentationMode ? 66 : 60}
+          minSize={25}
+        >
           <div className="flex flex-col h-full">
             {/* Path Breadcrumb */}
             {selectedPath.length > 0 && (
@@ -339,6 +346,8 @@ export function JsonTree({ initialSecurityControls }: JsonTreeProps) {
                   tree={tree}
                   selectedNodeId={selectedNodeId}
                   onSelect={selectNode}
+                  presentationMode={presentationMode}
+                  securitySnapshot={initialSecurityControls}
                 />
               )}
               {viewMode === 'raw' && (
@@ -353,8 +362,12 @@ export function JsonTree({ initialSecurityControls }: JsonTreeProps) {
               )}
             </div>
             
-            <StatsPanel stats={stats} />
-            <SchemaRegistryPanel rawJson={rawJson} isValid={isValid} />
+            {!presentationMode && (
+              <>
+                <StatsPanel stats={stats} />
+                <SchemaRegistryPanel rawJson={rawJson} isValid={isValid} />
+              </>
+            )}
           </div>
         </ResizablePanel>
         

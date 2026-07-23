@@ -22,7 +22,16 @@ describe('trusted JSON fetch', () => {
   })
 
   it.each([
+    'https://innovativefuturesolutions.com/api/security-controls',
+    'https://www.innovativefuturesolutions.com/api/health',
+    'https://platphorm-json-canary.barbine-michael.workers.dev/api/health',
+  ])('accepts the exact public Cloudflare demo origin %s', (url) => {
+    expect(validateTrustedFetchUrl(url).toString()).toBe(url)
+  })
+
+  it.each([
     ['https://example.com/data.json', 'UNTRUSTED_HOST'],
+    ['https://another-worker.workers.dev/data.json', 'UNTRUSTED_HOST'],
     ['http://127.0.0.1/data.json', 'UNTRUSTED_HOST'],
     ['https://user:password@json.platphormnews.com/data.json', 'CREDENTIALED_URL'],
   ])('rejects unsafe input %s', (url, code) => {

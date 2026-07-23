@@ -1,4 +1,5 @@
 import { isSafeUrl } from './api-utils'
+import { isTrustedPublicJsonHost, TRUSTED_PUBLIC_JSON_SCOPE } from './trusted-json-hosts'
 
 export const MAX_FETCHED_JSON_BYTES = 5 * 1024 * 1024
 export const MAX_REDIRECT_HOPS = 3
@@ -12,11 +13,6 @@ export class TrustedFetchError extends Error {
     super(message)
     this.name = 'TrustedFetchError'
   }
-}
-
-export function isTrustedPlatphormHost(hostname: string): boolean {
-  const normalized = hostname.toLowerCase().replace(/\.$/, '')
-  return normalized === 'platphormnews.com' || normalized.endsWith('.platphormnews.com')
 }
 
 export function validateTrustedFetchUrl(input: string): URL {
@@ -33,9 +29,9 @@ export function validateTrustedFetchUrl(input: string): URL {
   if (url.username || url.password) {
     throw new TrustedFetchError('Credentialed URLs are not allowed', 400, 'CREDENTIALED_URL')
   }
-  if (!isTrustedPlatphormHost(url.hostname)) {
+  if (!isTrustedPublicJsonHost(url.hostname)) {
     throw new TrustedFetchError(
-      'Server-side URL import is limited to trusted platphormnews.com hosts.',
+      `Server-side URL import is limited to ${TRUSTED_PUBLIC_JSON_SCOPE}.`,
       403,
       'UNTRUSTED_HOST',
     )

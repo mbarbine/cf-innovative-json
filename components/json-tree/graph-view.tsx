@@ -25,13 +25,17 @@ import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from '@/comp
 import {
   getSecurityControlTone,
   type SecurityControlTone,
+  type SecurityControlsSnapshot,
 } from '@/lib/security-controls'
+import { SecurityPresentationGuide } from './security-presentation-guide'
 
 interface GraphViewProps {
   tree: JsonNode | null
   selectedNodeId: string | null
   onSelect: (id: string | null) => void
   className?: string
+  presentationMode?: boolean
+  securitySnapshot?: SecurityControlsSnapshot
 }
 
 interface PositionedNode {
@@ -644,7 +648,9 @@ export const GraphView = memo(function GraphView({
   tree,
   selectedNodeId,
   onSelect,
-  className
+  className,
+  presentationMode = false,
+  securitySnapshot,
 }: GraphViewProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [transform, setTransform] = useState({ x: 0, y: 0, scale: 1 })
@@ -655,6 +661,7 @@ export const GraphView = memo(function GraphView({
   const [containerSize, setContainerSize] = useState({ width: 800, height: 600 })
   const [showMiniMap, setShowMiniMap] = useState(true)
   const [copiedPath, setCopiedPath] = useState<string | null>(null)
+  const [presentationTone, setPresentationTone] = useState<SecurityControlTone>('waf')
   const initializedSecuritySnapshotRef = useRef<string | null>(null)
 
   // Measure container
@@ -824,6 +831,24 @@ export const GraphView = memo(function GraphView({
     })
   }, [layout, containerSize])
 
+  useEffect(() => {
+    if (!presentationMode || !layout) return
+    const target = layout.nodes.find(({ node }) => node.key === presentationTone)
+    if (!target) return
+
+    const timer = window.setTimeout(() => {
+      const scale = 0.82
+      setTransform({
+        x: containerSize.width * 0.68 - (target.x + target.width / 2) * scale,
+        y: containerSize.height * 0.5 - (target.y + target.height / 2) * scale,
+        scale,
+      })
+      onSelect(target.node.id)
+    }, 80)
+
+    return () => window.clearTimeout(timer)
+  }, [containerSize, layout, onSelect, presentationMode, presentationTone])
+
   const resetView = useCallback(() => {
     setTransform({ x: 50, y: 50, scale: 1 })
     setCollapsedNodes(new Set())
@@ -848,6 +873,7 @@ export const GraphView = memo(function GraphView({
 
   // Auto-fit on tree change
   useEffect(() => {
+    if (presentationMode) return
     if (layout && containerSize.width > 0 && containerSize.height > 0) {
       const timer = setTimeout(() => {
         const padding = 80
@@ -867,7 +893,7 @@ export const GraphView = memo(function GraphView({
       }, 50)
       return () => clearTimeout(timer)
     }
-  }, [tree?.id, layout, containerSize.width, containerSize.height, fitToScreen, securityLegend.length])
+  }, [tree?.id, layout, containerSize.width, containerSize.height, fitToScreen, presentationMode, securityLegend.length])
 
   useEffect(() => {
     const handleGlobalMouseUp = () => setIsDragging(false)
@@ -962,7 +988,14 @@ export const GraphView = memo(function GraphView({
           </g>
         </svg>
 
-        {securityLegend.length > 0 && (
+        {presentationMode && securitySnapshot && securityLegend.length > 0 ? (
+          <SecurityPresentationGuide
+            activeTone={presentationTone}
+            availableTones={securityLegend}
+            snapshot={securitySnapshot}
+            onToneChange={setPresentationTone}
+          />
+        ) : securityLegend.length > 0 && (
           <div className="absolute top-4 left-4 z-20 max-w-sm rounded-xl border border-border bg-background/95 p-3 shadow-xl backdrop-blur-md">
             <div className="flex items-center gap-2">
               <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.65)]" />

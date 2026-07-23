@@ -6,6 +6,7 @@ import { getModelAdapterStatus } from '@/lib/model-adapter'
 import { getSchemaPack } from '@/lib/schema-registry'
 import { APP_VERSION, PRODUCT_NAME, SERVICE_ID } from '@/lib/platform'
 import { getDeploymentConfig } from '@/lib/deployment'
+import { TRUSTED_PUBLIC_JSON_SCOPE } from '@/lib/trusted-json-hosts'
 
 export async function GET(request: NextRequest) {
   const headers = request.headers
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest) {
       schemaPack,
       auth: getAuthPolicy('future-protected'),
       modelIntegration: getModelAdapterStatus(headers),
-      trustedDomainStatus: '*.platphormnews.com',
+      trustedDomainStatus: TRUSTED_PUBLIC_JSON_SCOPE,
       traceEnabled: true,
       traceExportEnabled: false,
       traceContextAccepted,

@@ -6,14 +6,23 @@ import { loadSecurityControlsSnapshot } from '@/lib/security-controls'
 export const dynamic = 'force-dynamic'
 export const revalidate = 0
 
-export default async function HomePage() {
+interface HomePageProps {
+  searchParams: Promise<{ present?: string | string[] }>
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
+  const params = await searchParams
   const securityControls = await loadSecurityControlsSnapshot()
+  const presentationMode = params.present === 'security'
 
   return (
     <div className="flex flex-col h-screen">
       <Header />
       <main className="flex-1 overflow-hidden">
-        <JsonTree initialSecurityControls={securityControls} />
+        <JsonTree
+          initialSecurityControls={securityControls}
+          presentationMode={presentationMode}
+        />
       </main>
       <Footer />
     </div>
