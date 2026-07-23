@@ -2,6 +2,7 @@ import { writeFileSync } from 'node:fs'
 
 const canaryUrl = (process.env.CLOUDFLARE_CANARY_URL || '').replace(/\/$/, '')
 const canaryRequestUrl = (process.env.CLOUDFLARE_CANARY_REQUEST_URL || canaryUrl).replace(/\/$/, '')
+const canaryViewerUrl = (process.env.CLOUDFLARE_CANARY_VIEWER_URL || 'https://json.innovativefuturesolutions.com').replace(/\/$/, '')
 const productionUrl = (process.env.PRODUCTION_JSON_URL || 'https://json.platphormnews.com').replace(/\/$/, '')
 const timeoutMs = Number(process.env.SMOKE_TIMEOUT_MS || 12_000)
 const mode = process.env.SMOKE_MODE || 'remote'
@@ -31,6 +32,8 @@ function normalizedForParity(value, path) {
   const result = normalized(value)
   if (path === '/openapi.json' && result?.['x-platphorm']) {
     delete result['x-platphorm'].routeCount
+    const fetchUrlOperation = result.paths?.['/api/v1/fetch-url']?.post
+    if (fetchUrlOperation) delete fetchUrlOperation.summary
   }
   return result
 }
@@ -129,6 +132,30 @@ for (const [path, body] of posts) {
     return { status: response.status }
   })
 }
+
+await check('trusted demo JSON handoff', async () => {
+  const response = await expectStatus(canaryUrl, '/api/v1/fetch-url', 200, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ url: 'https://innovativefuturesolutions.com/api/security-controls' }),
+  })
+  const body = await response.json()
+  assert(body.ok === true, 'trusted demo handoff did not return the ok envelope')
+  assert(typeof body.data?.json === 'string' && JSON.parse(body.data.json)?.data?.waf, 'trusted demo handoff did not return the control snapshot')
+  assert(body.data?.viewerUrl?.startsWith(`${canaryViewerUrl}/?`), 'trusted demo handoff did not return the configured canary viewer URL')
+  return { status: response.status, source: 'approved-demo-origin', graphView: true }
+})
+
+await check('unapproved Worker JSON blocked', async () => {
+  const response = await expectStatus(canaryUrl, '/api/v1/fetch-url', 403, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ url: 'https://another-worker.workers.dev/data.json' }),
+  })
+  const body = await response.json()
+  assert(body.error?.code === 'UNTRUSTED_HOST', 'unapproved Worker host did not use the trusted-host boundary')
+  return { status: response.status, code: body.error.code }
+})
 
 await check('malformed JSON fixture', async () => {
   const response = await expectStatus(canaryUrl, '/api/v1/parse', 400, {
