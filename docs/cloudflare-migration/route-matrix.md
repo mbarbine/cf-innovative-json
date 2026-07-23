@@ -34,4 +34,4 @@ The remote smoke suite exercises representative GET, POST, malformed-input, payl
 | Trace context and critical CORS | Unit tests passed | Passed | Passed |
 | Normalized production parity | Not applicable | Passed | Passed |
 
-The complete remote result was 29/29 on both hostnames. Windows local workerd remains blocked by OpenNext's generated middleware-manifest resolution on Windows. The deployed Linux Worker is the accepted runtime gate; the limitation is recorded rather than presented as a local pass.
+The complete remote result is 31/31 on both hostnames. Windows local workerd remains blocked by OpenNext's generated middleware-manifest resolution on Windows. The deployed Linux Worker is the accepted runtime gate; the limitation is recorded rather than presented as a local pass.

@@ -28,9 +28,28 @@ function normalized(value) {
     .map(([key, child]) => [key, normalized(child)]))
 }
 
-function normalizedForParity(value, path) {
+function normalizedForParity(value, path, expectedOrigin) {
   const result = normalized(value)
+  if (path === '/api/v1/schema-pack') {
+    for (const collection of [result?.data?.schemas, result?.data?.files]) {
+      if (!Array.isArray(collection)) continue
+      for (const entry of collection) {
+        if (!entry?.url) continue
+        const url = new URL(entry.url)
+        assert(url.origin === expectedOrigin, `unexpected schema URL origin ${url.origin}`)
+        entry.url = url.pathname
+      }
+    }
+  }
   if (path === '/openapi.json' && result?.['x-platphorm']) {
+    if (Array.isArray(result.servers)) {
+      for (const server of result.servers) {
+        if (!server?.url || server.description !== 'Production') continue
+        const url = new URL(server.url)
+        assert(url.origin === expectedOrigin, `unexpected OpenAPI server origin ${url.origin}`)
+        server.url = url.pathname || '/'
+      }
+    }
     delete result['x-platphorm'].routeCount
     const fetchUrlOperation = result.paths?.['/api/v1/fetch-url']?.post
     if (fetchUrlOperation) delete fetchUrlOperation.summary
@@ -259,7 +278,7 @@ if (mode !== 'local' && productionUrl !== canaryUrl) {
         const operationCount = canaryBody?.['x-platphorm']?.routeCount
         assert(Number.isInteger(operationCount) && operationCount >= Object.keys(canaryBody?.paths || {}).length, 'canary OpenAPI routeCount is not a valid operation count')
       }
-      assert(JSON.stringify(normalizedForParity(canaryBody, path)) === JSON.stringify(normalizedForParity(productionBody, path)), `${path} differs after dynamic-field normalization`)
+      assert(JSON.stringify(normalizedForParity(canaryBody, path, canaryViewerUrl)) === JSON.stringify(normalizedForParity(productionBody, path, productionUrl)), `${path} differs after dynamic-field normalization`)
       return { status: 'equal-after-normalization' }
     })
   }

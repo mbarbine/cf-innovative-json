@@ -12,7 +12,7 @@ This file records nonsecret, redacted evidence. Never add API tokens, Worker sec
 | Validated runtime checkpoint | `0ff930f` (exact-route static-shadow removal) |
 | Lint | Passed after the final route and smoke-harness updates |
 | Typecheck | Passed after the final route and smoke-harness updates |
-| Unit tests | 14 files, 84 tests passed |
+| Unit tests | 14 files, 93 tests passed |
 | Next.js production build | Passed; 50 routes |
 | OpenNext build | Passed |
 | Cloudflare source-build bundle | 6,122.71 KiB upload; 1,217.63 KiB gzip; 27 ms startup |
@@ -39,12 +39,13 @@ This file records nonsecret, redacted evidence. Never add API tokens, Worker sec
 | --- | --- |
 | Workers Builds source | `mbarbine/cf-innovative-json`, branch `migration/cloudflare-json-canary`; automatic source connection active only for this branch |
 | Runtime secret | `PLATPHORM_API_KEY` stored as a Worker secret; value never logged or committed |
-| Validated deployment | Runtime checkpoint `0ff930f`; Worker version `8e08990a…` |
+| Validated deployment | Public-discovery runtime checkpoint `0b09090`; first deployed version `604ceec5…` |
 | workers.dev URL | `https://platphorm-json-canary.barbine-michael.workers.dev` |
-| workers.dev smoke | 29/29 passed at 2026-07-22T23:39Z |
+| workers.dev smoke | 31/31 passed at 2026-07-23T02:16Z |
 | Custom-domain DNS/TLS | Two independent public resolvers returned the Cloudflare addresses; certificate validation result 0; HTTP 200 |
-| Custom-domain smoke/parity | 29/29 passed at 2026-07-22T23:41Z using the exact hostname and TLS SNI through a temporary local DNS-pin proxy because the Windows resolver retained an earlier NXDOMAIN answer |
-| Canary noindex/robots | `X-Robots-Tag`, HTML robots metadata, production canonical, and terminal disallow-all robots group verified |
+| Custom-domain smoke/parity | 31/31 passed at 2026-07-23T02:16Z using direct public DNS and the exact custom hostname |
+| Public discovery and robots | Self-canonical, indexable HTML; application-owned robots policy explicitly allows major AI crawlers and publishes absolute canary sitemaps |
+| AnswerReady rubric | 100/100, grade A, with zero rubric deductions when the live target is fetched without Cloudflare's zone-wide Bot Fight Mode challenge |
 | Deterministic WAF normal request | HTTP 200 at 2026-07-22T23:42Z |
 | Deterministic WAF demo block | HTTP 403 at 2026-07-22T23:42Z; owned rule ref `platphorm_json_canary_demo_block_v1`, rule ID `14d1fb09…` |
 | Production-safety comparison | Production returned HTTP 200 with and without the canary demo marker and did not redirect to the canary |
